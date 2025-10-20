@@ -32,5 +32,8 @@ with <i>UserCreationForm</i> as 'form'.
 
 @login_required
 def user_logout(request):
+    """
+    View for logout requested user
+    """
     logout(request)
     return render(request, 'userprofile/logout.html')
