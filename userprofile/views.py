@@ -17,9 +17,9 @@ with <i>UserCreationForm</i> as 'form'.
             
             UserProfile.objects.create(user=user)
 
-            return redirect('core:index')
+            return redirect('userprofile:login')
     else:
-        
+
         form = UserCreationForm()
 
     return render(request, 
