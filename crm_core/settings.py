@@ -31,7 +31,7 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv(), default='')
 
 LOGIN_REDIRECT_URL = '/dashboard/'
-LOGIN_URL = 'login'
+LOGIN_URL = 'userprofile:login'
 LOGOUT_REDIRECT_URL = '/'
 
 # Application definition
