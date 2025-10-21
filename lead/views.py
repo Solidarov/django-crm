@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 
 from lead import views, forms
@@ -35,3 +35,16 @@ def list_leads(request):
         'leads': leads,
     }
     return render(request, 'lead/list_leads.html', context=context)
+
+@login_required
+def lead_detail(request, id):
+    """
+    View for list lead details created by <i>requested user</i> 
+    and having certain <i>id</i>   
+    """
+    lead = get_object_or_404(Lead, created_by=request.user, pk=id)
+    context = {
+        'lead': lead,
+    }
+
+    return render(request, 'lead/detail_lead.html', context=context,)
