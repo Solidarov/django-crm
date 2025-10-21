@@ -2,6 +2,18 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Lead(models.Model):
+    """
+    Database model for <b>Leads</b>. Fields:
+        - name CharField
+        - email EmailField
+        - description TextField, can be blank/null
+        - priority CharField with choices (Low/Medium/High)
+        - status CharField with choices (New/Contacted/Won/Lost)
+        - created_by ForeignKey with User model
+        - created_at DateTimeField with auto_now_add
+        - modified_at DateTimeField with auto_now
+    """
+
     LOW = 'low'
     MEDIUM = 'medium'
     HIGH = 'high'
