@@ -15,7 +15,7 @@ def add_lead(request):
         if form.is_valid:
             lead = form.save(commit=False)
             lead.created_by = request.user
-            lead.save
+            lead.save()
             return redirect('dashboard:dashboard')
     else:    
         form = forms.AddLeadForm()
