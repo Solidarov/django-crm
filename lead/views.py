@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 from lead import views, forms
 from lead.models import Lead
@@ -16,7 +17,10 @@ def add_lead(request):
             lead = form.save(commit=False)
             lead.created_by = request.user
             lead.save()
-            return redirect('dashboard:dashboard')
+
+            messages.success(request, f"The lead \"{lead.name}\" have been successfully added")
+            
+            return redirect('lead:list')
     else:    
         form = forms.AddLeadForm()
 
@@ -48,3 +52,16 @@ def lead_detail(request, id):
     }
 
     return render(request, 'lead/detail_lead.html', context=context,)
+
+@login_required
+def delete_lead(request, id):
+    """
+    View for delete having certain <i>id</i> and 
+    created by <i>requested user</i>     
+    """
+    lead = get_object_or_404(Lead, created_by=request.user, pk=id)
+    lead.delete()
+
+    messages.success(request, f"The lead \"{lead.name}\" have been successfully deleted")
+
+    return redirect('lead:list')

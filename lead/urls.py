@@ -9,4 +9,5 @@ urlpatterns = [
     path('', lead_view.list_leads, name='list'),
     path('add/', lead_view.add_lead, name='add'),
     path('<int:id>/', lead_view.lead_detail, name='detail'),
+    path('<int:id>/delete/', lead_view.delete_lead, name='delete'),
 ]

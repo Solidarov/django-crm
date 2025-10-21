@@ -23,6 +23,13 @@
         <p class="font-semibold">Modified at</p>
         <p class="mb-6">{{ lead.modified_at|date:"d M, Y H:i" }}</p>
     
-        <a href="{% url 'lead:list' %}" class="hover:text-gray-500">Back to leads</a>
+        <div class="block inline-block mb-3">
+            <a href="{% url 'lead:delete' lead.id%}" class="px-4 py-3 bg-red-700 rounded-xl text-white hover:bg-red-500">Delete</a>
+        </div>
+
+        <hr class="my-4 text-gray-200 border-1">
+        
+        <a href="{% url 'lead:list' %}" class="hover:text-gray-500"><-- Back to leads</a>
+        
     </div>
 {% endblock %}
