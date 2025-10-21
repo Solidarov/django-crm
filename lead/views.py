@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
 from lead import views, forms
+from lead.models import Lead
 
 @login_required
 def add_lead(request):
@@ -23,3 +24,14 @@ def add_lead(request):
         'form': form,
     }
     return render(request, 'lead/add_lead.html', context=context)
+
+@login_required
+def list_leads(request):
+    """
+    View for list all leads created by requested user
+    """
+    leads = Lead.objects.filter(created_by=request.user)
+    context = {
+        'leads': leads,
+    }
+    return render(request, 'lead/list_leads.html', context=context)
