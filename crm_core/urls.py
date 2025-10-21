@@ -22,4 +22,5 @@ urlpatterns = [
 
     path('', include('core.urls')),
     path('users/', include('userprofile.urls')),
+    path('dashboard/', include('dashboard.urls')),
 ]

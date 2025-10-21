@@ -30,7 +30,7 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv(), default='')
 
-LOGIN_REDIRECT_URL = '/dashboard/'
+LOGIN_REDIRECT_URL = 'dashboard:dashboard'
 LOGIN_URL = 'userprofile:login'
 LOGOUT_REDIRECT_URL = '/'
 
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 
     'core',
     'userprofile',
+    'dashboard',
 ]
 
 MIDDLEWARE = [
