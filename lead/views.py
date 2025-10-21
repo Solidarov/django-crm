@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from lead import views, forms
+from lead.forms import(AddLeadForm,)
+
 from lead.models import Lead
 
 @login_required
@@ -12,7 +13,7 @@ def add_lead(request):
     <strong>(login required)</strong>
     """
     if request.method == 'POST':
-        form = forms.AddLeadForm(request.POST)
+        form = AddLeadForm(request.POST)
         if form.is_valid:
             lead = form.save(commit=False)
             lead.created_by = request.user
@@ -22,7 +23,7 @@ def add_lead(request):
             
             return redirect('lead:list')
     else:    
-        form = forms.AddLeadForm()
+        form = AddLeadForm()
 
     context = {
         'form': form,
@@ -65,3 +66,25 @@ def delete_lead(request, id):
     messages.success(request, f"The lead \"{lead.name}\" have been successfully deleted")
 
     return redirect('lead:list')
+
+@login_required
+def edit_lead(request, id):
+    """
+    View for edit lead created by requested user and 
+    having certain id
+    """
+    lead = get_object_or_404(Lead, created_by=request.user, pk=id,)
+
+    if request.method == 'POST':
+        form = AddLeadForm(request.POST, instance=lead)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Changes have been saved")
+            return redirect('lead:detail', id=id)
+    else:
+        form = AddLeadForm(instance=lead)
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'lead/edit_lead.html', context=context,)
