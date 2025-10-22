@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 from lead.forms import(AddLeadForm,)
+from client.models import (Client,)
 
 from lead.models import Lead
 
@@ -35,7 +36,7 @@ def list_leads(request):
     """
     View for list all leads created by requested user
     """
-    leads = Lead.objects.filter(created_by=request.user)
+    leads = Lead.objects.filter(created_by=request.user, converted_to_client=False)
     context = {
         'leads': leads,
     }
@@ -88,3 +89,20 @@ def edit_lead(request, id):
         'form': form,
     }
     return render(request, 'lead/edit_lead.html', context=context,)
+
+@login_required
+def convert_to_client(request, id):
+    """
+    Convert lead into the client and add it into the database
+    """
+    lead = get_object_or_404(Lead, created_by=request.user, converted_to_client=False,pk=id)
+    Client.objects.create(name=lead.name,
+                                   email=lead.email,
+                                   description=lead.description,
+                                   created_by=request.user,)
+
+    lead.converted_to_client = True
+    lead.save()
+
+    messages.success(request, "The lead was converted into a client")
+    return redirect('lead:list')

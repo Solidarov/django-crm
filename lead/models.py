@@ -9,6 +9,7 @@ class Lead(models.Model):
         - description TextField, can be blank/null
         - priority CharField with choices (Low/Medium/High)
         - status CharField with choices (New/Contacted/Won/Lost)
+        - converted_to_client BooleanField
         - created_by ForeignKey with User model
         - created_at DateTimeField with auto_now_add
         - modified_at DateTimeField with auto_now
@@ -46,6 +47,7 @@ class Lead(models.Model):
     status = models.CharField(max_length=10,
                               choices=CHOICES_STATUS,
                               default=NEW,)
+    converted_to_client = models.BooleanField(default=False)
     created_by = models.ForeignKey(User, 
                                    related_name='leads',
                                    on_delete=models.CASCADE,)
