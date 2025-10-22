@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import (render,
+                              get_object_or_404,)
 
 from client.models import (Client,)
 
@@ -13,3 +14,15 @@ def list_clients(request):
         'clients': clients,
     }
     return render(request, 'client/list_clients.html', context=context)
+
+@login_required
+def detail_client(request, id):
+    """
+    View for list client details created by <i>requested user</i> 
+    and having certain <i>id</i>
+    """
+    client = get_object_or_404(Client, created_by=request.user, pk=id)
+    context = {
+        'client': client,
+    }
+    return render(request, 'client/detail_client.html', context=context)
