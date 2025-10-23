@@ -1,8 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import (render,
-                              get_object_or_404,)
+                              get_object_or_404,
+                              redirect,)
+from django.contrib import messages
 
 from client.models import (Client,)
+from client.forms import (AddClientForm,)
 
 @login_required
 def list_clients(request):
@@ -26,3 +29,34 @@ def detail_client(request, id):
         'client': client,
     }
     return render(request, 'client/detail_client.html', context=context)
+
+@login_required
+def add_client(request):
+    """
+    View for adding a new client
+    """
+    if request.method == 'POST':
+        form = AddClientForm(request.POST)
+        
+        if form.is_valid():
+            client = form.save(commit=False)
+            client.created_by = request.user
+            client.save()
+
+            messages.success(
+                request, 
+                'The new client have been created',
+                )
+            
+            return redirect('client:list')
+    else:
+        form = AddClientForm()
+
+    context = {
+        'form': form,
+    }
+    return render(
+        request, 
+        'client/add_client.html', 
+        context=context,
+        )
