@@ -19,7 +19,7 @@
     
         <div class="block inline-block mb-3 space-x-3">
             <a href="#" class="px-4 py-3 bg-teal-500 rounded-xl text-white hover:bg-teal-300">Edit</a>
-            <a href="#" class="px-4 py-3 bg-red-500 rounded-xl text-white hover:bg-red-300">Delete</a>
+            <a href="{% url 'client:delete' client.id %}" class="px-4 py-3 bg-red-500 rounded-xl text-white hover:bg-red-300">Delete</a>
         </div>
 
         <hr class="my-4 text-gray-200 border-1">

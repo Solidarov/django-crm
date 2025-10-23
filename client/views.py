@@ -37,7 +37,7 @@ def add_client(request):
     """
     if request.method == 'POST':
         form = AddClientForm(request.POST)
-        
+
         if form.is_valid():
             client = form.save(commit=False)
             client.created_by = request.user
@@ -60,3 +60,15 @@ def add_client(request):
         'client/add_client.html', 
         context=context,
         )
+
+@login_required
+def delete_client(request, id):
+    client = get_object_or_404(Client, created_by=request.user, pk=id)
+    client.delete()
+
+    messages.success(
+        request,
+        f'The {client.name} client was successfully deleted',
+    )
+
+    return redirect('client:list')
