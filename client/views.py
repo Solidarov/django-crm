@@ -72,3 +72,35 @@ def delete_client(request, id):
     )
 
     return redirect('client:list')
+
+@login_required
+def edit_client(request, id):
+    """
+    View for edit client, created by requested user and 
+    having a certain id
+    """
+    client = get_object_or_404(Client, created_by=request.user, pk=id)
+
+    if request.method == 'POST':
+        form = AddClientForm(request.POST, instance=client)
+        if form.is_valid():
+            form.save()
+
+            messages.success(
+                request,
+                'The client was successfully updated',
+            )
+
+            return redirect('client:detail', id=id)
+        
+    else:
+        form = AddClientForm(instance=client)
+
+    context = {
+        'form': form,
+    }
+    return render(
+        request, 
+        'client/edit_client.html', 
+        context=context,
+        )
