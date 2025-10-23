@@ -2,10 +2,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from lead.forms import(AddLeadForm,)
-from client.models import (Client,)
+from lead.forms import (
+    AddLeadForm,
+)
+from client.models import (
+    Client,
+)
 
 from lead.models import Lead
+
 
 @login_required
 def add_lead(request):
@@ -13,23 +18,26 @@ def add_lead(request):
     View for create a new lead to the database
     <strong>(login required)</strong>
     """
-    if request.method == 'POST':
+    if request.method == "POST":
         form = AddLeadForm(request.POST)
         if form.is_valid:
             lead = form.save(commit=False)
             lead.created_by = request.user
             lead.save()
 
-            messages.success(request, f"The lead \"{lead.name}\" have been successfully added")
-            
-            return redirect('lead:list')
-    else:    
+            messages.success(
+                request, f'The lead "{lead.name}" have been successfully added'
+            )
+
+            return redirect("lead:list")
+    else:
         form = AddLeadForm()
 
     context = {
-        'form': form,
+        "form": form,
     }
-    return render(request, 'lead/add_lead.html', context=context)
+    return render(request, "lead/add_lead.html", context=context)
+
 
 @login_required
 def list_leads(request):
@@ -38,71 +46,91 @@ def list_leads(request):
     """
     leads = Lead.objects.filter(created_by=request.user, converted_to_client=False)
     context = {
-        'leads': leads,
+        "leads": leads,
     }
-    return render(request, 'lead/list_leads.html', context=context)
+    return render(request, "lead/list_leads.html", context=context)
+
 
 @login_required
 def lead_detail(request, id):
     """
-    View for list lead details created by <i>requested user</i> 
-    and having certain <i>id</i>   
+    View for list lead details created by <i>requested user</i>
+    and having certain <i>id</i>
     """
     lead = get_object_or_404(Lead, created_by=request.user, pk=id)
     context = {
-        'lead': lead,
+        "lead": lead,
     }
 
-    return render(request, 'lead/detail_lead.html', context=context,)
+    return render(
+        request,
+        "lead/detail_lead.html",
+        context=context,
+    )
+
 
 @login_required
 def delete_lead(request, id):
     """
-    View for delete having certain <i>id</i> and 
-    created by <i>requested user</i>     
+    View for delete having certain <i>id</i> and
+    created by <i>requested user</i>
     """
     lead = get_object_or_404(Lead, created_by=request.user, pk=id)
     lead.delete()
 
-    messages.success(request, f"The lead \"{lead.name}\" have been successfully deleted")
+    messages.success(request, f'The lead "{lead.name}" have been successfully deleted')
 
-    return redirect('lead:list')
+    return redirect("lead:list")
+
 
 @login_required
 def edit_lead(request, id):
     """
-    View for edit lead created by requested user and 
+    View for edit lead created by requested user and
     having certain id
     """
-    lead = get_object_or_404(Lead, created_by=request.user, pk=id,)
+    lead = get_object_or_404(
+        Lead,
+        created_by=request.user,
+        pk=id,
+    )
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = AddLeadForm(request.POST, instance=lead)
         if form.is_valid():
             form.save()
             messages.success(request, f"Changes have been saved")
-            return redirect('lead:detail', id=id)
+            return redirect("lead:detail", id=id)
     else:
         form = AddLeadForm(instance=lead)
-    
+
     context = {
-        'form': form,
+        "form": form,
     }
-    return render(request, 'lead/edit_lead.html', context=context,)
+    return render(
+        request,
+        "lead/edit_lead.html",
+        context=context,
+    )
+
 
 @login_required
 def convert_to_client(request, id):
     """
     Convert lead into the client and add it into the database
     """
-    lead = get_object_or_404(Lead, created_by=request.user, converted_to_client=False,pk=id)
-    Client.objects.create(name=lead.name,
-                                   email=lead.email,
-                                   description=lead.description,
-                                   created_by=request.user,)
+    lead = get_object_or_404(
+        Lead, created_by=request.user, converted_to_client=False, pk=id
+    )
+    Client.objects.create(
+        name=lead.name,
+        email=lead.email,
+        description=lead.description,
+        created_by=request.user,
+    )
 
     lead.converted_to_client = True
     lead.save()
 
     messages.success(request, "The lead was converted into a client")
-    return redirect('lead:list')
+    return redirect("lead:list")
