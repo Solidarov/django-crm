@@ -1,10 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from team.models import Team
+
 
 class Lead(models.Model):
     """
     Database model for <b>Leads</b>. Fields:
+        - team ForeignKey with Team model
         - name CharField
         - email EmailField
         - description TextField, can be blank/null
@@ -20,7 +23,11 @@ class Lead(models.Model):
     MEDIUM = "medium"
     HIGH = "high"
 
-    CHOICES_PRIORITY = ((LOW, "Low"), (MEDIUM, "Medium"), (HIGH, "High"))
+    CHOICES_PRIORITY = (
+        (LOW, "Low"),
+        (MEDIUM, "Medium"),
+        (HIGH, "High"),
+    )
 
     NEW = "new"
     CONTACTED = "contacted"
@@ -34,11 +41,21 @@ class Lead(models.Model):
         (LOST, "Lost"),
     )
 
+    team = models.ForeignKey(
+        Team,
+        related_name="leads",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
     name = models.CharField(
         max_length=255,
     )
     email = models.EmailField()
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField(
+        blank=True,
+        null=True,
+    )
     priority = models.CharField(
         max_length=10,
         choices=CHOICES_PRIORITY,
@@ -49,7 +66,9 @@ class Lead(models.Model):
         choices=CHOICES_STATUS,
         default=NEW,
     )
-    converted_to_client = models.BooleanField(default=False)
+    converted_to_client = models.BooleanField(
+        default=False,
+    )
     created_by = models.ForeignKey(
         User,
         related_name="leads",
