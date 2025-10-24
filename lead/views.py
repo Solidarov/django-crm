@@ -19,7 +19,10 @@ def add_lead(request):
     <strong>(login required)</strong>
     """
     if request.method == "POST":
-        form = AddLeadForm(request.POST)
+        form = AddLeadForm(
+            request.POST,
+            user=request.user,
+        )
         if form.is_valid:
             lead = form.save(commit=False)
             lead.created_by = request.user
@@ -31,7 +34,9 @@ def add_lead(request):
 
             return redirect("lead:list")
     else:
-        form = AddLeadForm()
+        form = AddLeadForm(
+            user=request.user,
+        )
 
     context = {
         "form": form,
@@ -96,13 +101,20 @@ def edit_lead(request, id):
     )
 
     if request.method == "POST":
-        form = AddLeadForm(request.POST, instance=lead)
+        form = AddLeadForm(
+            request.POST,
+            instance=lead,
+            user=request.user,
+        )
         if form.is_valid():
             form.save()
             messages.success(request, f"Changes have been saved")
             return redirect("lead:detail", id=id)
     else:
-        form = AddLeadForm(instance=lead)
+        form = AddLeadForm(
+            instance=lead,
+            user=request.user,
+        )
 
     context = {
         "form": form,
