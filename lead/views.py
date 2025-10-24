@@ -139,6 +139,7 @@ def convert_to_client(request, id):
         email=lead.email,
         description=lead.description,
         created_by=request.user,
+        team=lead.team,
     )
 
     lead.converted_to_client = True
