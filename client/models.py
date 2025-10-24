@@ -20,6 +20,8 @@ class Client(models.Model):
         Team,
         related_name="clients",
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
     name = models.CharField(
         max_length=255,

@@ -49,7 +49,7 @@ def add_client(request):
     View for adding a new client
     """
     if request.method == "POST":
-        form = AddClientForm(request.POST)
+        form = AddClientForm(request.POST, user=request.user)
 
         if form.is_valid():
             client = form.save(commit=False)
@@ -63,7 +63,7 @@ def add_client(request):
 
             return redirect("client:list")
     else:
-        form = AddClientForm()
+        form = AddClientForm(user=request.user)
 
     context = {
         "form": form,
@@ -105,7 +105,7 @@ def edit_client(request, id):
     client = get_object_or_404(Client, created_by=request.user, pk=id)
 
     if request.method == "POST":
-        form = AddClientForm(request.POST, instance=client)
+        form = AddClientForm(request.POST, instance=client, user=request.user)
         if form.is_valid():
             form.save()
 
@@ -117,7 +117,7 @@ def edit_client(request, id):
             return redirect("client:detail", id=id)
 
     else:
-        form = AddClientForm(instance=client)
+        form = AddClientForm(instance=client, user=request.user)
 
     context = {
         "form": form,
