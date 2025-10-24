@@ -1,10 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from team.models import Team
+
 
 class Client(models.Model):
     """
     Database model for <b>Clients</b>. Fields:
+    - team ForeignKey with Team model
     - name CharField
     - email EmailField
     - description TextField, can be blank/null
@@ -13,6 +16,11 @@ class Client(models.Model):
     - modified_at DateTimeField with auto_now
     """
 
+    team = models.ForeignKey(
+        Team,
+        related_name="clients",
+        on_delete=models.CASCADE,
+    )
     name = models.CharField(
         max_length=255,
     )

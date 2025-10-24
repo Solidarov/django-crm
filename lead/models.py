@@ -1,10 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from team.models import Team
+
 
 class Lead(models.Model):
     """
     Database model for <b>Leads</b>. Fields:
+        - team ForeignKey with Team model
         - name CharField
         - email EmailField
         - description TextField, can be blank/null
@@ -34,6 +37,11 @@ class Lead(models.Model):
         (LOST, "Lost"),
     )
 
+    team = models.ForeignKey(
+        Team,
+        related_name="leads",
+        on_delete=models.CASCADE,
+    )
     name = models.CharField(
         max_length=255,
     )
