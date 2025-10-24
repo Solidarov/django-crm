@@ -4,13 +4,14 @@
 
 {% block content %}
     <h1 class="mb-4 text-center text-xl">
-        List Clients
+        My Clients List 
     </h1>
 
     <div class="flex justify-between">
         <p class="py-4 px-2 bg-gray-200 font-semibold w-full">Name</p>
         <p class="py-4 px-2 bg-gray-200 font-semibold w-full">Date added</p>
         <p class="py-4 px-2 bg-gray-200 font-semibold w-full">Last modified</p>
+        <p class="py-4 px-2 bg-gray-200 font-semibold w-full">Team</p>
     </div>
     {% for client in clients %}
         <div class="flex justify-between">
@@ -19,6 +20,13 @@
             </p>
             <p class="py-2 px-2 w-full {% cycle '' 'bg-gray-100' %}">{{ client.created_at|date:"d M, Y H:i" }}</p>
             <p class="py-2 px-2 w-full {% cycle '' 'bg-gray-100' %}">{{ client.modified_at|date:"d M, Y H:i" }}</p>
+            <p class="py-2 px-2 w-full {% cycle '' 'bg-gray-100' %}">
+                {% if client.team %}
+                    {{ client.team }}
+                {% else %}
+                    ---
+                {% endif %}
+            </p>
         </div>
 
     {% empty %}

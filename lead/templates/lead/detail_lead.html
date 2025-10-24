@@ -11,6 +11,14 @@
             <p class="mb-2">{{ lead.description }}</p>
         {% endif %}
 
+        <p class="font-semibold">Email</p>
+        <p class="mb-2">{{ lead.email }}</p>
+
+        {% if lead.team %}
+            <p class="font-semibold">Team</p>
+            <p class="mb-2">{{ lead.team }}</p>
+        {% endif %}
+
         <p class="font-semibold">Priority</p>
         <p class="mb-2">{{ lead.get_priority_display }}</p>
 
