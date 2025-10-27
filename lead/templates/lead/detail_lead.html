@@ -29,7 +29,10 @@
         <p class="mb-2">{{ lead.created_at|date:"d M, Y H:i" }}</p>
 
         <p class="font-semibold">Modified at</p>
-        <p class="mb-6">{{ lead.modified_at|date:"d M, Y H:i" }}</p>
+        <p class="mb-2">{{ lead.modified_at|date:"d M, Y H:i" }}</p>
+
+        <p class="font-semibold">Created by</p>
+        <p class="mb-6">{{ lead.created_by.username }}</p>
     
         <div class="block inline-block mb-3 space-x-3">
             {% if not lead.converted_to_client %}
@@ -41,6 +44,8 @@
 
         <hr class="my-4 text-gray-200 border-1">
         
+        <a href="{% url 'dashboard:dashboard' %}" class="hover:text-gray-500"><-- Back to dashboard</a>
+        <hr class="my-4 text-gray-200 border-1">
         <a href="{% url 'lead:list' %}" class="hover:text-gray-500"><-- Back to leads</a>
         
     </div>
