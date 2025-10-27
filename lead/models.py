@@ -1,7 +1,43 @@
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import User
 
 from team.models import Team
+
+
+class LeadQuerySet(models.QuerySet):
+    def get_for_user(self, user):
+        """
+        Return all lead records related to the given user.
+
+        Includes:
+        - leads created by the user (this covers leads with team=None created by the user),
+        - leads assigned to teams the user is a member of,
+        - leads assigned to teams created by the user.
+        """
+        q_created_by = Q(created_by=user)  # lead created by user
+        q_teams_in = Q(team__in=user.teams.all())  # lead in the same team as user
+        q_tems_created = Q(
+            team__in=user.created_teams.all()
+        )  # lead in the team created by user
+
+        query = q_created_by | q_teams_in | q_tems_created
+
+        return self.filter(query).distinct()
+
+
+class LeadManager(models.Manager):
+    def get_queryset(self):
+        """
+        Return a LeadQuerySet instance for this manager.
+        """
+        return LeadQuerySet(self.model, using=self._db)
+
+    def get_for_user(self, user):
+        """
+        Delegate to LeadQuerySet.get_for_user(user).
+        """
+        return self.get_queryset().get_for_user(user=user)
 
 
 class Lead(models.Model):
@@ -40,6 +76,8 @@ class Lead(models.Model):
         (WON, "Won"),
         (LOST, "Lost"),
     )
+
+    objects = LeadManager()
 
     team = models.ForeignKey(
         Team,
