@@ -23,7 +23,12 @@
             <div class="flex-1">
                 <ul>
                     {% for team in teams %}
-                        <li class="pl-3 pb-1 text-gray-500">{{ team.name }}</li>
+                        <li class="pl-3 pb-1 text-gray-500">
+                            {{ team.name }}
+                            {% if team.created_by == request.user %}
+                                <a href="{% url 'team:edit' team.id%}" class="hover:text-gray-700">(Edit)</a>
+                            {% endif %}
+                        </li>
                     {% empty %}
                         <li class="pl-3 py-1 text-gray-500">No teams</li>
                     {% endfor %}
