@@ -29,12 +29,13 @@ def list_clients(request):
 @login_required
 def detail_client(request, id):
     """
-    View for list client details created by <i>requested user</i>
-    and having certain <i>id</i>
+    View for list client details
     """
+    clients = Client.objects.get_for_user(
+        request.user,
+    )  # get clients related to request user
     client = get_object_or_404(
-        Client,
-        created_by=request.user,
+        clients,
         pk=id,
     )
     context = {

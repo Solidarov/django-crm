@@ -3,7 +3,70 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-    <h1 class="text-center">
-        Dashboard
-    </h1>
+    <div>
+        <h1 class="mb-4 text-center text-xl">
+            Dashboard
+        </h1>
+
+        <div class="flex space-x-4">
+            <div class="w-1/2 px-4 py-6 bg-gray-100 rounded-xl leads">
+                <h2 class="text-lg text-center mb-6">Leads I'm in</h2>
+                <div class="flex justify-between">
+                    <p class="py-4 px-2 bg-gray-200 font-semibold w-full">Name</p>
+                    <p class="py-4 px-2 bg-gray-200 font-semibold w-full">Priority</p>
+                    <p class="py-4 px-2 bg-gray-200 font-semibold w-full">Status</p>
+                    <p class="py-4 px-2 bg-gray-200 font-semibold w-full">Team</p>
+                </div>
+                {% for lead in leads %}
+                    <div class="flex justify-between">
+                        <p class="py-2 px-2 w-full {% cycle '' 'bg-gray-100' %} hover:text-gray-500">
+                            <a href="{% url 'lead:detail' lead.id%}">{{ lead.name }}</a>
+                        </p>
+                        <p class="py-2 px-2 w-full {% cycle '' 'bg-gray-100' %}">{{lead.get_priority_display}}</p>
+                        <p class="py-2 px-2 w-full {% cycle '' 'bg-gray-100' %}">{{lead.get_status_display}}</p>
+                        <p class="py-2 px-2 w-full {% cycle '' 'bg-gray-100' %}">
+                            {% if lead.team %}
+                                {{ lead.team }}
+                            {% else %}
+                                ---
+                            {% endif %}
+                        </p>
+                    </div>
+
+                {% empty %}
+                    <p class="py-6">There are no leads in the database yet...</p>
+                {% endfor %}
+            
+            </div>
+            <div class="w-1/2 px-4 py-6 bg-gray-100 rounded-xl clients">
+                <h2 class="text-lg text-center mb-6">Clients I'm in</h2>
+                <div class="flex justify-between">
+                    <p class="py-4 px-2 bg-gray-200 font-semibold w-full">Name</p>
+                    <p class="py-4 px-2 bg-gray-200 font-semibold w-full">Date added</p>
+                    <p class="py-4 px-2 bg-gray-200 font-semibold w-full">Last modified</p>
+                    <p class="py-4 px-2 bg-gray-200 font-semibold w-full">Team</p>
+                </div>
+                    {% for client in clients %}
+                        <div class="flex justify-between">
+                            <p class="py-2 px-2 w-full {% cycle '' 'bg-gray-100' %} hover:text-gray-500">
+                                <a href="{% url 'client:detail' client.id %}">{{ client.name }}</a>
+                            </p>
+                            <p class="py-2 px-2 w-full {% cycle '' 'bg-gray-100' %}">{{ client.created_at|date:"d M, Y H:i" }}</p>
+                            <p class="py-2 px-2 w-full {% cycle '' 'bg-gray-100' %}">{{ client.modified_at|date:"d M, Y H:i" }}</p>
+                            <p class="py-2 px-2 w-full {% cycle '' 'bg-gray-100' %}">
+                                {% if client.team %}
+                                    {{ client.team }}
+                                {% else %}
+                                    ---
+                                {% endif %}
+                            </p>
+                        </div>
+
+                    {% empty %}
+                        <p class="py-6">There are no clients in the database yet...</p>
+                    {% endfor %}
+            
+            </div>
+        </div>
+    </div>
 {% endblock %}

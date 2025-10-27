@@ -1,4 +1,8 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import (
+    render,
+    redirect,
+    get_object_or_404,
+)
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
@@ -59,10 +63,15 @@ def list_leads(request):
 @login_required
 def lead_detail(request, id):
     """
-    View for list lead details created by <i>requested user</i>
-    and having certain <i>id</i>
+    View for list lead details
     """
-    lead = get_object_or_404(Lead, created_by=request.user, pk=id)
+    leads = Lead.objects.get_for_user(
+        request.user
+    )  # get all clients related to the request user
+    lead = get_object_or_404(
+        leads,
+        pk=id,
+    )
     context = {
         "lead": lead,
     }
@@ -131,14 +140,19 @@ def convert_to_client(request, id):
     """
     Convert lead into the client and add it into the database
     """
+    leads = Lead.objects.get_for_user(
+        request.user
+    )  # get all clients related to the request user
     lead = get_object_or_404(
-        Lead, created_by=request.user, converted_to_client=False, pk=id
+        leads,
+        converted_to_client=False,
+        pk=id,
     )
     Client.objects.create(
         name=lead.name,
         email=lead.email,
         description=lead.description,
-        created_by=request.user,
+        created_by=lead.created_by,
         team=lead.team,
     )
 
