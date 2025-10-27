@@ -2,8 +2,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 
 from userprofile.models import UserProfile
+from team.models import Team
 
 
 def signup(request):
@@ -41,3 +43,26 @@ def user_logout(request):
     """
     logout(request)
     return render(request, "userprofile/logout.html")
+
+
+@login_required
+def myaccount(request):
+    """
+    Renders the "My account" page with all
+    teams user involved in
+    """
+
+    q_created_by = Q(created_by=request.user)
+    q_member = Q(members=request.user)
+    query = q_created_by | q_member
+
+    teams = Team.objects.filter(query).distinct()
+
+    context = {
+        "teams": teams,
+    }
+    return render(
+        request,
+        "userprofile/myaccount.html",
+        context=context,
+    )
