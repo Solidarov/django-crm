@@ -27,15 +27,14 @@ def signup(request):
 
             plan_exist = Plan.objects.all().exists()
             if not plan_exist:
-                plan = Plan(
+                plan = Plan.objects.create(
                     name="Basic",
                     price=10,
                     max_leads=2,
                     max_clients=2,
                 )
-                plan.save()
             else:
-                plan = Plan.objects.get(pk=1)
+                plan = Plan.objects.first()
 
             team = Team.objects.create(
                 name=f"{user.username}_team",
