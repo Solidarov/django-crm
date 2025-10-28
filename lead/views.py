@@ -1,4 +1,8 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import (
+    render,
+    redirect,
+    get_object_or_404,
+)
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
@@ -7,6 +11,10 @@ from lead.forms import (
 )
 from client.models import (
     Client,
+)
+from team.models import (
+    Team,
+    Plan,
 )
 
 from lead.models import Lead
@@ -19,8 +27,27 @@ def add_lead(request):
     <strong>(login required)</strong>
     """
     if request.method == "POST":
-        form = AddLeadForm(request.POST)
-        if form.is_valid:
+        form = AddLeadForm(
+            request.POST,
+            user=request.user,
+        )
+
+        if form.is_valid():
+
+            # Checks if plan limit is not exceeded
+            team = form.cleaned_data.get("team")
+            team_count = Lead.objects.filter(
+                team=team, converted_to_client=False
+            ).count()
+            plan_lim = team.plan.max_leads
+
+            if team_count >= plan_lim:
+                messages.error(request, f"The plan was exceeded")
+                context = {
+                    "form": form,
+                }
+                return render(request, "lead/add_lead.html", context=context)
+
             lead = form.save(commit=False)
             lead.created_by = request.user
             lead.save()
@@ -31,7 +58,9 @@ def add_lead(request):
 
             return redirect("lead:list")
     else:
-        form = AddLeadForm()
+        form = AddLeadForm(
+            user=request.user,
+        )
 
     context = {
         "form": form,
@@ -54,10 +83,15 @@ def list_leads(request):
 @login_required
 def lead_detail(request, id):
     """
-    View for list lead details created by <i>requested user</i>
-    and having certain <i>id</i>
+    View for list lead details
     """
-    lead = get_object_or_404(Lead, created_by=request.user, pk=id)
+    leads = Lead.objects.get_for_user(
+        request.user
+    )  # get all clients related to the request user
+    lead = get_object_or_404(
+        leads,
+        pk=id,
+    )
     context = {
         "lead": lead,
     }
@@ -96,13 +130,36 @@ def edit_lead(request, id):
     )
 
     if request.method == "POST":
-        form = AddLeadForm(request.POST, instance=lead)
+        form = AddLeadForm(
+            request.POST,
+            instance=lead,
+            user=request.user,
+        )
         if form.is_valid():
+
+            # Checks if plan limit is not exceeded
+
+            team = form.cleaned_data.get("team")
+            lead_counts = Lead.objects.filter(
+                team=team, converted_to_client=False
+            ).count()
+            plan_lim = team.plan.max_leads
+
+            if lead_counts >= plan_lim:
+                messages.error(request, f"The team plan was exceeded")
+                context = {
+                    "form": form,
+                }
+                return render(request, "lead/edit_lead.html", context=context)
+
             form.save()
             messages.success(request, f"Changes have been saved")
             return redirect("lead:detail", id=id)
     else:
-        form = AddLeadForm(instance=lead)
+        form = AddLeadForm(
+            instance=lead,
+            user=request.user,
+        )
 
     context = {
         "form": form,
@@ -119,14 +176,32 @@ def convert_to_client(request, id):
     """
     Convert lead into the client and add it into the database
     """
+    leads = Lead.objects.get_for_user(
+        request.user
+    )  # get all clients related to the request user
     lead = get_object_or_404(
-        Lead, created_by=request.user, converted_to_client=False, pk=id
+        leads,
+        converted_to_client=False,
+        pk=id,
     )
+
+    # Check if plan was not exceeded
+    team_count = Client.objects.filter(team=lead.team).count()
+    plan_lim = lead.team.plan.max_clients
+    if team_count >= plan_lim:
+        messages.error(
+            request,
+            f"The team plan was exceeded",
+        )
+
+        return redirect("lead:detail", lead.id)
+
     Client.objects.create(
         name=lead.name,
         email=lead.email,
         description=lead.description,
-        created_by=request.user,
+        created_by=lead.created_by,
+        team=lead.team,
     )
 
     lead.converted_to_client = True

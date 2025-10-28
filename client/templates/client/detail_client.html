@@ -11,11 +11,22 @@
             <p class="mb-2">{{ client.description }}</p>
         {% endif %}
 
+        <p class="font-semibold">Email</p>
+        <p class="mb-2">{{ client.email }}</p>
+
+        {% if client.team %}
+            <p class="font-semibold">Team</p>
+            <p class="mb-2">{{ client.team }}</p>
+        {% endif %}
+
         <p class="font-semibold">Created at</p>
         <p class="mb-2">{{ client.created_at|date:"d M, Y H:i" }}</p>
 
         <p class="font-semibold">Modified at</p>
-        <p class="mb-6">{{ client.modified_at|date:"d M, Y H:i" }}</p>
+        <p class="mb-2">{{ client.modified_at|date:"d M, Y H:i" }}</p>
+                
+        <p class="font-semibold">Created by</p>
+        <p class="mb-6">{{ client.created_by.username }}</p>
     
         <div class="block inline-block mb-3 space-x-3">
             <a href="{% url 'client:edit' client.id %}" class="px-4 py-3 bg-teal-500 rounded-xl text-white hover:bg-teal-300">Edit</a>
@@ -24,7 +35,9 @@
 
         <hr class="my-4 text-gray-200 border-1">
         
-        <a href="{% url 'client:list' %}" class="hover:text-gray-500"><-- Back to clients</a>
+        <a href="{% url 'dashboard:dashboard' %}" class="hover:text-gray-500"><-- Back to dashboard</a>
+        <hr class="my-4 text-gray-200 border-1">
+        <a href="{% url 'client:list' %}" class="hover:text-gray-500"><-- Back to my clients</a>
         
     </div>
 {% endblock %}
