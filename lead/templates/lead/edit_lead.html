@@ -12,7 +12,8 @@
 
         {{form.as_p}}
 
-        <button class="py-4 px-8 bg-teal-500 text-white rounded-xl mt-6">Edit</button>
+        <a href="{% url 'lead:detail' form.instance.id %}" class="py-4 px-8 mt-6 bg-gray-500 text-white rounded-xl">Back</a>
+        <button class="py-4 px-8 ml-4 mt-6 bg-teal-500 text-white rounded-xl">Edit</button>
     </form>
 </div>
     
