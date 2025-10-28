@@ -60,7 +60,7 @@ def add_client(request):
             # Check if plan limit is not exceeded
             team = form.cleaned_data.get("team")
             client_count = Client.objects.filter(team=team).count()
-            plan_lim = Plan.objects.get(pk=team.plan.id).max_clients
+            plan_lim = team.plan.max_clients
 
             if client_count >= plan_lim:
                 messages.error(request, f"The plan was exceeded")
@@ -128,7 +128,7 @@ def edit_client(request, id):
             # Check if plan limit is not exceeded
             team = form.cleaned_data.get("team")
             client_count = Client.objects.filter(team=team).count()
-            plan_lim = Plan.objects.get(pk=team.plan.id).max_clients
+            plan_lim = team.plan.max_clients
 
             if client_count >= plan_lim:
                 messages.error(request, f"The plan was exceeded")

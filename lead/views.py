@@ -39,7 +39,7 @@ def add_lead(request):
             team_count = Lead.objects.filter(
                 team=team, converted_to_client=False
             ).count()
-            plan_lim = Plan.objects.get(pk=team.plan.id).max_leads
+            plan_lim = team.plan.max_leads
 
             if team_count >= plan_lim:
                 messages.error(request, f"The plan was exceeded")
@@ -143,7 +143,7 @@ def edit_lead(request, id):
             lead_counts = Lead.objects.filter(
                 team=team, converted_to_client=False
             ).count()
-            plan_lim = Plan.objects.get(pk=team.plan.id).max_leads
+            plan_lim = team.plan.max_leads
 
             if lead_counts >= plan_lim:
                 messages.error(request, f"The team plan was exceeded")
@@ -187,7 +187,7 @@ def convert_to_client(request, id):
 
     # Check if plan was not exceeded
     team_count = Client.objects.filter(team=lead.team).count()
-    plan_lim = Plan.objects.get(pk=lead.team.plan.id).max_clients
+    plan_lim = lead.team.plan.max_clients
     if team_count >= plan_lim:
         messages.error(
             request,
