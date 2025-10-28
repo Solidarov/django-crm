@@ -3,6 +3,19 @@ from django.contrib.auth.models import User
 
 
 class Plan(models.Model):
+    """
+    Plan within the CRM.
+
+    Fields:
+    - name: CharField(100)
+    - price: IntegerField()
+    - desription: TextField(blank, null)
+    - max_leads: IntegerField()
+    - max_clients: IntegerField()
+
+    - __str__ returns name
+    """
+
     name = models.CharField(max_length=50)
     price = models.IntegerField()
     desription = models.TextField(blank=True, null=True)
