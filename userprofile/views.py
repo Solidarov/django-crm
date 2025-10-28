@@ -5,12 +5,15 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 
 from userprofile.models import UserProfile
-from team.models import Team
+from team.models import (
+    Team,
+    Plan,
+)
 
 
 def signup(request):
     """
-        View for creating <b>User</b> along with <b>UserProfile</b>
+        View for creating <b>User</b> along with <b>UserProfile</b> and Team
         \nRender <i>'userprofile/signup.html'</i> template
     with <i>UserCreationForm</i> as 'form'.
     """
@@ -22,9 +25,22 @@ def signup(request):
 
             UserProfile.objects.create(user=user)
 
+            plan_exist = Plan.objects.all().exists()
+            if not plan_exist:
+                plan = Plan(
+                    name="Basic",
+                    price=10,
+                    max_leads=2,
+                    max_clients=2,
+                )
+                plan.save()
+            else:
+                plan = Plan.objects.get(pk=1)
+
             team = Team.objects.create(
                 name=f"{user.username}_team",
                 created_by=user,
+                plan=plan,
             )
             team.members.add(user)
             team.save()
