@@ -83,8 +83,6 @@ class Lead(models.Model):
         Team,
         related_name="leads",
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
     )
     name = models.CharField(
         max_length=255,

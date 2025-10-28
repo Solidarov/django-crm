@@ -12,6 +12,10 @@ from lead.forms import (
 from client.models import (
     Client,
 )
+from team.models import (
+    Team,
+    Plan,
+)
 
 from lead.models import Lead
 
@@ -27,7 +31,23 @@ def add_lead(request):
             request.POST,
             user=request.user,
         )
-        if form.is_valid:
+
+        if form.is_valid():
+
+            # Checks if plan limit is not exceeded
+            team = form.cleaned_data.get("team")
+            team_count = Lead.objects.filter(
+                team=team, converted_to_client=False
+            ).count()
+            plan_lim = Plan.objects.get(pk=team.plan.id).max_leads
+
+            if team_count >= plan_lim:
+                messages.error(request, f"The plan was exceeded")
+                context = {
+                    "form": form,
+                }
+                return render(request, "lead/add_lead.html", context=context)
+
             lead = form.save(commit=False)
             lead.created_by = request.user
             lead.save()
@@ -116,6 +136,22 @@ def edit_lead(request, id):
             user=request.user,
         )
         if form.is_valid():
+
+            # Checks if plan limit is not exceeded
+
+            team = form.cleaned_data.get("team")
+            lead_counts = Lead.objects.filter(
+                team=team, converted_to_client=False
+            ).count()
+            plan_lim = Plan.objects.get(pk=team.plan.id).max_leads
+
+            if lead_counts >= plan_lim:
+                messages.error(request, f"The team plan was exceeded")
+                context = {
+                    "form": form,
+                }
+                return render(request, "lead/edit_lead.html", context=context)
+
             form.save()
             messages.success(request, f"Changes have been saved")
             return redirect("lead:detail", id=id)
@@ -148,6 +184,18 @@ def convert_to_client(request, id):
         converted_to_client=False,
         pk=id,
     )
+
+    # Check if plan was not exceeded
+    team_count = Client.objects.filter(team=lead.team).count()
+    plan_lim = Plan.objects.get(pk=lead.team.plan.id).max_clients
+    if team_count >= plan_lim:
+        messages.error(
+            request,
+            f"The team plan was exceeded",
+        )
+
+        return redirect("lead:detail", lead.id)
+
     Client.objects.create(
         name=lead.name,
         email=lead.email,
