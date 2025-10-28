@@ -139,13 +139,16 @@ def edit_lead(request, id):
 
             # Checks if plan limit is not exceeded
 
+            change_team = "team" in form.changed_data  # checks if team was changed
+
             team = form.cleaned_data.get("team")
             lead_counts = Lead.objects.filter(
                 team=team, converted_to_client=False
             ).count()
             plan_lim = team.plan.max_leads
 
-            if lead_counts >= plan_lim:
+            # checks if limit was exceeded and if team was changed
+            if lead_counts >= plan_lim and change_team:
                 messages.error(request, f"The team plan was exceeded")
                 context = {
                     "form": form,

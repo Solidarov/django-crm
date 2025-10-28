@@ -33,6 +33,6 @@ class AddLeadForm(forms.ModelForm):
         # If no teams was found, return none queryset
         if "team" in self.fields:
             if user is not None:
-                self.fields["team"].queryset = Team.objects.filter(created_by=user)
+                self.fields["team"].queryset = Team.objects.filter(members=user)
             else:
                 self.fields["team"].queryset = Team.objects.none()
