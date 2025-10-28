@@ -9,6 +9,9 @@ from django.contrib import messages
 from client.models import (
     Client,
 )
+from team.models import (
+    Plan,
+)
 from client.forms import (
     AddClientForm,
 )
@@ -53,6 +56,19 @@ def add_client(request):
         form = AddClientForm(request.POST, user=request.user)
 
         if form.is_valid():
+
+            # Check if plan limit is not exceeded
+            team = form.cleaned_data.get("team")
+            client_count = Client.objects.filter(team=team).count()
+            plan_lim = Plan.objects.get(pk=team.plan.id).max_clients
+
+            if client_count >= plan_lim:
+                messages.error(request, f"The plan was exceeded")
+                context = {
+                    "form": form,
+                }
+                return render(request, "client/add_client.html", context=context)
+
             client = form.save(commit=False)
             client.created_by = request.user
             client.save()
@@ -108,6 +124,19 @@ def edit_client(request, id):
     if request.method == "POST":
         form = AddClientForm(request.POST, instance=client, user=request.user)
         if form.is_valid():
+
+            # Check if plan limit is not exceeded
+            team = form.cleaned_data.get("team")
+            client_count = Client.objects.filter(team=team).count()
+            plan_lim = Plan.objects.get(pk=team.plan.id).max_clients
+
+            if client_count >= plan_lim:
+                messages.error(request, f"The plan was exceeded")
+                context = {
+                    "form": form,
+                }
+                return render(request, "client/edit_client.html", context=context)
+
             form.save()
 
             messages.success(
