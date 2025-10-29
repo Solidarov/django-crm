@@ -3,7 +3,7 @@
 ## Description
 Teal CRM is a lightweight CRM built with Django that helps track Leads and Clients within Teams (workspaces). Each user can sign up, manage their own records, and operate inside a Team with a selected Plan that limits how many leads/clients can be created. It’s a clean starter for learning and extending a multi-tenant CRM.
 
-## ✨ Demo
+## ✨ Demo (will be soon)
 - Live demo: https://your-demo-url.example (TBD)
 - Screenshots:
   - Dashboard: docs/screenshots/dashboard.png (TBD)
