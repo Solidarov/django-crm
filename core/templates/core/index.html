@@ -1,9 +1,102 @@
 {% extends 'core/base.html' %}
+{% load static %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Teal CRM{% endblock %}
 
 {% block content %}
-    <h1 class="text-center">
-        Hello world
-    </h1>
+<div class="max-w-6xl mx-auto py-12 px-6">
+  <header class="text-center">
+    <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900">Teal CRM</h1>
+    <p class="mt-4 text-gray-700 max-w-2xl mx-auto">
+      A lightweight, multi-tenant Django CRM with team workspaces, plan-based limits, lead-to-client conversion, and a clean responsive dashboard — ideal for learning or extending a small sales workflow.
+    </p>
+
+    <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+      <a href="{% url 'userprofile:signup' %}" class="inline-block py-3 px-6 bg-teal-600 text-white rounded-xl shadow hover:bg-teal-500">Sign up</a>
+      <a href="{% url 'userprofile:login' %}" class="inline-block py-3 px-6 bg-white border border-gray-200 text-gray-800 rounded-xl shadow hover:bg-gray-50">Log in</a>
+      <a href="{% url 'dashboard:dashboard' %}" class="inline-block py-3 px-6 bg-gray-100 text-gray-800 rounded-xl shadow hover:bg-gray-200">View dashboard</a>
+    </div>
+  </header>
+
+  <main class="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <section class="lg:col-span-2 space-y-6">
+      <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+        <h2 class="text-xl font-semibold text-gray-900">What it does</h2>
+        <p class="mt-3 text-gray-700">
+          Manage leads and clients inside team workspaces. Each team can be assigned a plan that limits how many leads and clients can be created — useful for experimenting with multi-tenant and billing-related logic in a compact codebase.
+        </p>
+
+        <div class="mt-6 grid sm:grid-cols-2 gap-4">
+          <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+            <h3 class="font-medium">Leads & Clients</h3>
+            <p class="mt-2 text-sm text-gray-600">Create, edit, convert leads to clients and track statuses and priorities.</p>
+          </div>
+
+          <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+            <h3 class="font-medium">Teams & Plans</h3>
+            <p class="mt-2 text-sm text-gray-600">Per-team limits (plans) control creation counts and act as a simple tenant boundary.</p>
+          </div>
+
+          <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+            <h3 class="font-medium">Responsive UI</h3>
+            <p class="mt-2 text-sm text-gray-600">Tailwind-based, minimal and easy to customize for learning or demos.</p>
+          </div>
+
+          <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+            <h3 class="font-medium">Admin-ready</h3>
+            <p class="mt-2 text-sm text-gray-600">Built-in admin to manage teams and plans for quick testing or seeding data.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+        <h2 class="text-xl font-semibold text-gray-900">Quick start</h2>
+        <ul class="mt-3 space-y-2 text-gray-700">
+          <li>Clone, create a Python venv, install requirements and run migrations.</li>
+          <li>Create a plan and ensure each user/team has a plan before creating many leads/clients.</li>
+          <li>Use the admin for fast data seeding and testing.</li>
+        </ul>
+      </div>
+    </section>
+
+    <aside class="space-y-6">
+      <div class="bg-gray-100 border border-gray-200 rounded-xl p-4">
+        <h3 class="font-semibold text-gray-900">Demo & screenshots</h3>
+        <p class="mt-2 text-sm text-gray-600">Live demo: <span class="text-teal-600">— coming soon —</span></p>
+        <div class="mt-4 grid gap-3">
+          <div class="w-full h-30 bg-white border border-gray-200 rounded-lg flex items-center justify-center text-sm text-gray-400">
+            <img alt="dashboard_screenshot" src="{% static 'images/demo/screenshots/Dashboard-Django-CRM.png' %}">
+          </div>
+          <div class="w-full h-20 bg-white border border-gray-200 rounded-lg flex items-center justify-center text-sm text-gray-400">
+            <img alt="leads_screenshot" src="{% static 'images/demo/screenshots/Leads-Django-CRM.png' %}">
+          </div>
+          <div class="w-full h-40 bg-white border border-gray-200 rounded-lg flex items-center justify-center text-sm text-gray-400">
+            <img alt="clients_screenshot" src="{% static 'images/demo/screenshots/Clients-Django-CRM.png' %}">
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white border border-gray-200 rounded-xl p-4">
+        <h3 class="font-semibold text-gray-900">Tech stack</h3>
+        <ul class="mt-3 text-sm text-gray-700 space-y-2">
+          <li>Python • Django</li>
+          <li>PostgreSQL</li>
+          <li>Tailwind CSS (CDN)</li>
+          <li>python-decouple for env config</li>
+        </ul>
+      </div>
+
+      <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
+        <h4 class="font-medium text-gray-900">Get started</h4>
+        <p class="mt-2 text-sm text-gray-600">Sign up to create a personal team automatically and try the flow.</p>
+        <a href="{% url 'userprofile:signup' %}" class="mt-4 inline-block py-2 px-4 bg-teal-600 text-white rounded-lg">Sign up</a>
+      </div>
+    </aside>
+  </main>
+
+  <div class="mt-12 text-center text-sm text-gray-500">
+    <p>This project is a learning/demo app — consult the README for setup and contribution notes.</p>
+  </div>
+</div>
 {% endblock %}
+<!-- ...existing code... -->
