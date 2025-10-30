@@ -98,7 +98,6 @@ python manage.py runserver
 ```
 Notes
 - Settings use python-decouple to read environment from .env ([crm_core/settings.py](crm_core/settings.py)).
-- Static assets use Tailwind via CDN; no extra build step is required for development.
 
 ## 🏃 Run manually (development)
 
