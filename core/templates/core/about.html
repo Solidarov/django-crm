@@ -1,9 +1,92 @@
 {% extends 'core/base.html' %}
 
-{% block title %}About{% endblock %}
+{% block title %}About Teal CRM{% endblock %}
 
 {% block content %}
-    <h1>
-        This is about page
-    </h1>
+<div class="max-w-5xl mx-auto py-12 px-6">
+  <header class="text-center mb-8">
+    <h1 class="text-3xl font-extrabold text-gray-900">About Teal CRM</h1>
+    <p class="mt-3 text-gray-600 max-w-2xl mx-auto">
+      Teal CRM is a compact, educational Django app demonstrating multi-tenant patterns with teams, plan-based limits,
+      and simple lead-to-client workflows — built to be clear, extendable and easy to run locally.
+    </p>
+  </header>
+
+  <section class="grid gap-8 md:grid-cols-2 mb-8">
+    <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+      <h2 class="text-lg font-semibold text-gray-900">Core ideas</h2>
+      <ul class="mt-4 space-y-3 text-gray-700">
+        <li><strong>Teams (workspaces)</strong> — isolate users' data and apply plan limits per team.</li>
+        <li><strong>Plans</strong> — control how many leads/clients a team can create; useful for billing demos.</li>
+        <li><strong>Lead → Client</strong> — a simple conversion flow to promote qualified leads into clients.</li>
+      </ul>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+      <h2 class="text-lg font-semibold text-gray-900">For users</h2>
+      <p class="mt-4 text-gray-700">
+        Sign up to get a personal team and start adding leads. Use the dashboard to track priorities and statuses,
+        convert leads into clients, and manage teammates if you need collaboration.
+      </p>
+      <div class="mt-6 flex gap-3">
+        <a href="{% url 'userprofile:signup' %}" class="inline-block py-2 px-4 bg-teal-600 text-white rounded-lg">Sign up</a>
+        <a href="{% url 'userprofile:login' %}" class="inline-block py-2 px-4 bg-white border border-gray-200 text-gray-800 rounded-lg">Log in</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-8">
+    <div class="bg-gray-50 border border-gray-100 rounded-xl p-6">
+      <h2 class="text-lg font-semibold text-gray-900">Architecture & conventions</h2>
+      <div class="mt-4 space-y-3 text-gray-700">
+        <p>
+          The app follows a simple Django layout: apps for leads, clients, teams, dashboard and user profiles.
+          Views use function-based views and templates are styled with Tailwind (CDN). Environment configuration
+          is handled via python-decouple.
+        </p>
+        <p>
+          Important domain rules:
+        </p>
+        <ul class="list-disc list-inside">
+          <li>All user data is scoped by team where possible — teams act as the tenant boundary.</li>
+          <li>Plan limits are enforced per team for leads and clients.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid gap-6 md:grid-cols-3 mb-8">
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <h3 class="font-medium text-gray-900">Tech stack</h3>
+      <p class="mt-2 text-sm text-gray-600">Python • Django • PostgreSQL • Tailwind (CDN)</p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <h3 class="font-medium text-gray-900">Getting started</h3>
+      <p class="mt-2 text-sm text-gray-600">Clone, create a virtualenv, install requirements and run migrations — see README for details.</p>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl p-4">
+      <h3 class="font-medium text-gray-900">Admin</h3>
+      <p class="mt-2 text-sm text-gray-600">Use Django admin to create Plans and seed Teams for quick testing.</p>
+    </div>
+  </section>
+
+  <section class="bg-white border border-gray-200 rounded-xl p-6 mb-8">
+    <h2 class="text-lg font-semibold text-gray-900">Contributing</h2>
+    <ol class="mt-4 list-decimal list-inside text-gray-700 space-y-2">
+      <li>Fork the repository and create a feature branch.</li>
+      <li>Add tests where appropriate and run the test suite locally.</li>
+      <li>Open a pull request with a clear summary and motivation for the change.</li>
+    </ol>
+  </section>
+
+  <footer class="text-center text-sm text-gray-600">
+    <p>
+      This project is intended for learning and demos. For production use you should harden authentication,
+      add proper billing, tenancy isolation and comprehensive tests.
+    </p>
+    <p class="mt-4">
+      <a href="https://github.com/Solidarov/django-crm" class="text-teal-600 hover:underline">View source on GitHub</a>
+    </p>
+  </footer>
+</div>
 {% endblock %}

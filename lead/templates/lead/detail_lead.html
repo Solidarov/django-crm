@@ -7,34 +7,94 @@
         <h1 class="mb-4 text-xl">{{ lead.name }}</h1>
 
         {% if lead.description %}
-            <p class="font-semibold">Description</p>
-            <p class="mb-2">{{ lead.description }}</p>
+            <div class="flex gap-4 mb-2">
+                <div class="pr-1">
+                    <strong>Description:</strong> 
+                </div>
+                <div class="w-1/2 p-4 bg-gray-100 rounded-xl border border-gray-200  ">
+                    {{ lead.description }}
+                </div>  
+            </div>
         {% endif %}
+        
+        <div class="flex gap-4 mb-4">
+            <div class="pr-6">
+                <strong>Email:</strong> 
+            </div>
+            <div class="flex-1 pl-6">
+                {{ lead.email }}
+            </div>  
+        </div>
 
-        <p class="font-semibold">Email</p>
-        <p class="mb-2">{{ lead.email }}</p>
+        <div class="flex gap-4 mb-4">
+            <div class="pr-6">
+                <strong>Team:</strong> 
+            </div>
+            <div class="flex-1 pl-7">
+                {{ lead.team }}
+            </div>  
+        </div>
 
-        {% if lead.team %}
-            <p class="font-semibold">Team</p>
-            <p class="mb-2">{{ lead.team }}</p>
-        {% endif %}
 
-        <p class="font-semibold">Priority</p>
-        <p class="mb-2">{{ lead.get_priority_display }}</p>
+        <div class="flex gap-4 mb-4">
+            <div class="pr-5">
+                <strong>Priority:</strong> 
+            </div>
+            <div class="flex-1 pl-3">
+                <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full 
+                {% if lead.get_priority_display == 'Low' %} bg-green-100 text-green-800
+                {% elif lead.get_priority_display == 'Medium' %} bg-yellow-100 text-yellow-800
+                {% elif lead.get_priority_display == 'High' %} bg-red-100 text-red-800
+                {% endif %}">
+                    {{ lead.get_priority_display }}
+                </span>
+            </div>  
+        </div>
 
-        <p class="font-semibold">Status</p>
-        <p class="mb-2">{{ lead.get_status_display }}</p>
+        <div class="flex gap-4 mb-4">
+            <div class="pr-5">
+                <strong>Status:</strong> 
+            </div>
+            <div class="flex-1 pl-5">
+                <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full 
+                {% if lead.get_status_display == 'New' %} bg-blue-100 text-blue-800
+                {% elif lead.get_status_display == 'Contacted' %} bg-yellow-100 text-yellow-800
+                {% elif lead.get_status_display == 'Won' %} bg-green-100 text-green-800
+                {% elif lead.get_status_display == 'Lost' %} bg-red-100 text-red-800
+                {% endif %}">
+                    {{ lead.get_status_display }}
+                </span>
+            </div>  
+        </div>
 
-        <p class="font-semibold">Created at</p>
-        <p class="mb-2">{{ lead.created_at|date:"d M, Y H:i" }}</p>
+        <div class="flex gap-4 mb-4">
+            <div class="pr-1">
+                <strong>Created at:</strong> 
+            </div>
+            <div class="flex-1 pl-2">
+                {{ lead.created_at|date:"d M, Y H:i" }}
+            </div>  
+        </div>
 
-        <p class="font-semibold">Modified at</p>
-        <p class="mb-2">{{ lead.modified_at|date:"d M, Y H:i" }}</p>
+        <div class="flex gap-4 mb-4">
+            <div class="pr-1">
+                <strong>Modified at:</strong> 
+            </div>
+            <div class="flex-1">
+                {{ lead.modified_at|date:"d M, Y H:i" }}
+            </div>  
+        </div>
 
-        <p class="font-semibold">Created by</p>
-        <p class="mb-6">{{ lead.created_by.username }}</p>
-    
-        <div class="block inline-block mb-3 space-x-3">
+        <div class="flex gap-4 mb-4">
+            <div class="pr-1">
+                <strong>Created by:</strong> 
+            </div>
+            <div class="flex-1 pl-1">
+                {{ lead.created_by.username }}
+            </div>  
+        </div>
+
+        <div class="block inline-block mt-6 mb-3 space-x-3">
             {% if not lead.converted_to_client %}
                 <a href="{% url 'lead:convert' lead.id %}" class="px-4 py-3 bg-blue-500 rounded-xl text-white hover:bg-blue-300">Convert to client</a>
             {% endif %}

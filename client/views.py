@@ -125,12 +125,13 @@ def edit_client(request, id):
         form = AddClientForm(request.POST, instance=client, user=request.user)
         if form.is_valid():
 
+            changed_team = "team" in form.changed_data  # checks if team was changed
             # Check if plan limit is not exceeded
             team = form.cleaned_data.get("team")
             client_count = Client.objects.filter(team=team).count()
             plan_lim = team.plan.max_clients
 
-            if client_count >= plan_lim:
+            if client_count >= plan_lim and changed_team:
                 messages.error(request, f"The plan was exceeded")
                 context = {
                     "form": form,

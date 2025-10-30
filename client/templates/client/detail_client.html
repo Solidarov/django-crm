@@ -7,28 +7,61 @@
         <h1 class="mb-4 text-xl">{{ client.name }}</h1>
 
         {% if client.description %}
-            <p class="font-semibold">Description</p>
-            <p class="mb-2">{{ client.description }}</p>
+            <div class="flex gap-4 mb-2">
+                <div class="pr-1">
+                    <strong>Description:</strong> 
+                </div>
+                <div class="w-1/2 p-4 bg-gray-100 rounded-xl border border-gray-200  ">
+                    {{ client.description }}
+                </div>  
+            </div>
         {% endif %}
+        
+        <div class="flex gap-4 mb-4">
+            <div class="pr-6">
+                <strong>Email:</strong> 
+            </div>
+            <div class="flex-1 pl-7">
+                {{ client.email }}
+            </div>  
+        </div>
 
-        <p class="font-semibold">Email</p>
-        <p class="mb-2">{{ client.email }}</p>
+        <div class="flex gap-4 mb-4">
+            <div class="pr-6">
+                <strong>Team:</strong> 
+            </div>
+            <div class="flex-1 pl-7">
+                {{ client.team }}
+            </div>  
+        </div>
 
-        {% if client.team %}
-            <p class="font-semibold">Team</p>
-            <p class="mb-2">{{ client.team }}</p>
-        {% endif %}
+        <div class="flex gap-4 mb-4">
+            <div class="pr-1">
+                <strong>Created at:</strong> 
+            </div>
+            <div class="flex-1 pl-2">
+                {{ client.created_at|date:"d M, Y H:i" }}
+            </div>  
+        </div>
 
-        <p class="font-semibold">Created at</p>
-        <p class="mb-2">{{ client.created_at|date:"d M, Y H:i" }}</p>
+        <div class="flex gap-4 mb-4">
+            <div class="pr-1">
+                <strong>Modified at:</strong> 
+            </div>
+            <div class="flex-1">
+                {{ client.modified_at|date:"d M, Y H:i" }}
+            </div>  
+        </div>
 
-        <p class="font-semibold">Modified at</p>
-        <p class="mb-2">{{ client.modified_at|date:"d M, Y H:i" }}</p>
-                
-        <p class="font-semibold">Created by</p>
-        <p class="mb-6">{{ client.created_by.username }}</p>
-    
-        <div class="block inline-block mb-3 space-x-3">
+        <div class="flex gap-4 mb-4">
+            <div class="pr-1">
+                <strong>Created by:</strong> 
+            </div>
+            <div class="flex-1 pl-2">
+                {{ client.created_by.username }}
+            </div>  
+        </div>
+        <div class="block inline-block mb-3 mt-6 space-x-3">
             <a href="{% url 'client:edit' client.id %}" class="px-4 py-3 bg-teal-500 rounded-xl text-white hover:bg-teal-300">Edit</a>
             <a href="{% url 'client:delete' client.id %}" class="px-4 py-3 bg-red-500 rounded-xl text-white hover:bg-red-300">Delete</a>
         </div>

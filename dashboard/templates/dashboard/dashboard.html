@@ -22,8 +22,25 @@
                         <p class="py-2 px-2 w-full {% cycle '' 'bg-gray-100' %} hover:text-gray-500">
                             <a href="{% url 'lead:detail' lead.id%}">{{ lead.name }}</a>
                         </p>
-                        <p class="py-2 px-2 w-full {% cycle '' 'bg-gray-100' %}">{{lead.get_priority_display}}</p>
-                        <p class="py-2 px-2 w-full {% cycle '' 'bg-gray-100' %}">{{lead.get_status_display}}</p>
+                        <p class="py-2 w-full {% cycle '' 'bg-gray-100' %}">
+                            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full 
+                            {% if lead.get_priority_display == 'Low' %} bg-green-100 text-green-800
+                            {% elif lead.get_priority_display == 'Medium' %} bg-yellow-100 text-yellow-800
+                            {% elif lead.get_priority_display == 'High' %} bg-red-100 text-red-800
+                            {% endif %}">
+                                {{lead.get_priority_display}}
+                            </span>
+                        </p>
+                        <p class="py-2  w-full {% cycle '' 'bg-gray-100' %}">
+                            <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full 
+                            {% if lead.get_status_display == 'New' %} bg-blue-100 text-blue-800
+                            {% elif lead.get_status_display == 'Contacted' %} bg-yellow-100 text-yellow-800
+                            {% elif lead.get_status_display == 'Won' %} bg-green-100 text-green-800
+                            {% elif lead.get_status_display == 'Lost' %} bg-red-100 text-red-800
+                            {% endif %}">
+                                {{lead.get_status_display}}
+                            </span>
+                        </p>
                         <p class="py-2 px-2 w-full {% cycle '' 'bg-gray-100' %}">
                             {% if lead.team %}
                                 {{ lead.team }}
