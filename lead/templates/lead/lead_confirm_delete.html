@@ -1,0 +1,22 @@
+{% extends 'core/base.html' %}
+
+{% load widget_tweaks %}
+
+{% block title %}{{ lead.name }} | Delete{% endblock %}
+
+{% block content %}
+<div class="py-6 px-6">
+    <h1 class="text-center text-xl">
+        Delete lead
+    </h1>
+    <div class="mt-6">
+        <form method="post", action="." class="max-w-xl mx-auto">
+            {% csrf_token %}
+            <p class="text-center my-2 py-4 px-6">Are you sure, you want to delete "<strong>{{ lead.name }}</strong>"?</p>
+            <a href="{% url 'lead:detail' lead.id %}" class="py-4 px-8 mt-6 bg-gray-500 text-white rounded-xl">Back</a>
+            <button class="py-4 px-8 ml-4 mt-6 bg-teal-500 text-white rounded-xl">Confirm</button>
+        </form>
+    </div>
+</div>
+    
+{% endblock %}

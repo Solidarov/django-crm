@@ -3,12 +3,15 @@ from django.shortcuts import (
     redirect,
     get_object_or_404,
 )
+from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic import (
     ListView,
     DetailView,
+    DeleteView,
 )
 
 from lead.forms import (
@@ -120,18 +123,19 @@ class LeadDetailView(LoginRequiredMixin, DetailView):
         )
 
 
-@login_required
-def delete_lead(request, id):
-    """
-    View for delete having certain <i>id</i> and
-    created by <i>requested user</i>
-    """
-    lead = get_object_or_404(Lead, created_by=request.user, pk=id)
-    lead.delete()
+class LeadDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
+    model = Lead
+    pk_url_kwarg = "id"
+    context_object_name = "lead"
+    success_url = reverse_lazy("lead:list")
 
-    messages.success(request, f'The lead "{lead.name}" have been successfully deleted')
+    def get_queryset(self):
+        return super().get_queryset().filter(created_by=self.request.user)
 
-    return redirect("lead:list")
+    def get_success_message(self, cleaned_data):
+        return 'The lead "%(name)s" have been successfully deleted' % {
+            "name": self.object.name
+        }
 
 
 @login_required
