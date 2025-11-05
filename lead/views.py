@@ -6,7 +6,10 @@ from django.shortcuts import (
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from django.views.generic.list import ListView
+from django.views.generic import (
+    ListView,
+    DetailView,
+)
 
 from lead.forms import (
     AddLeadForm,
@@ -93,27 +96,28 @@ class LeadsListView(LoginRequiredMixin, ListView):
         return queryset.order_by("-created_at")
 
 
-@login_required
-def lead_detail(request, id):
+class LeadDetailView(LoginRequiredMixin, DetailView):
     """
-    View for list lead details
-    """
-    leads = Lead.objects.get_for_user(
-        request.user
-    )  # get all clients related to the request user
-    lead = get_object_or_404(
-        leads,
-        pk=id,
-    )
-    context = {
-        "lead": lead,
-    }
+    Detail view for list lead details
 
-    return render(
-        request,
-        "lead/detail_lead.html",
-        context=context,
-    )
+    <i>login required to show this page</i>
+    """
+
+    model = Lead
+    pk_url_kwarg = "id"
+    context_object_name = "lead"
+    template_name = "lead/detail_lead.html"
+
+    def get_queryset(self):
+        # return all Lead records related to the user
+        # and filter if lead was not converted to client
+        # (check LeadQuerySet to more info)
+        return (
+            super()
+            .get_queryset()
+            .get_for_user(self.request.user)
+            .filter(converted_to_client=False)
+        )
 
 
 @login_required
