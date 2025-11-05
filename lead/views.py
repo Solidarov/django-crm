@@ -4,7 +4,9 @@ from django.shortcuts import (
     get_object_or_404,
 )
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from django.views.generic.list import ListView
 
 from lead.forms import (
     AddLeadForm,
@@ -68,16 +70,27 @@ def add_lead(request):
     return render(request, "lead/add_lead.html", context=context)
 
 
-@login_required
-def list_leads(request):
+class LeadsListView(LoginRequiredMixin, ListView):
     """
-    View for list all leads created by requested user
+    List view for list all leads created by requested user
+
+    <i>login required to show this page</i>
     """
-    leads = Lead.objects.filter(created_by=request.user, converted_to_client=False)
-    context = {
-        "leads": leads,
-    }
-    return render(request, "lead/list_leads.html", context=context)
+
+    model = Lead
+    template_name = "lead/list_leads.html"
+    context_object_name = "leads"
+
+    # Modify default Lead.objects.all()
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        queryset = queryset.filter(
+            created_by=self.request.user,
+            converted_to_client=False,
+        )
+
+        return queryset.order_by("-created_at")
 
 
 @login_required
