@@ -31,6 +31,7 @@ class Team(models.Model):
     Team within the CRM.
 
     Fields:
+    - plan: ForeignKey
     - name: CharField(100)
     - members: ManyToMany to User (related_name='teams')
     - created_by: ForeignKey to User, CASCADE (related_name='created_teams')

@@ -8,12 +8,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
+from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import (
     ListView,
     DetailView,
     DeleteView,
     UpdateView,
     CreateView,
+    View,
 )
 
 from lead.forms import (
@@ -152,41 +154,70 @@ class LeadUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return kwargs
 
 
-@login_required
-def convert_to_client(request, id):
+class ConvertToClientView(
+    LoginRequiredMixin, SuccessMessageMixin, SingleObjectMixin, View
+):
     """
-    Convert lead into the client and add it into the database
+    Convert lead into the client and add it into
+    the database
     """
-    leads = Lead.objects.get_for_user(
-        request.user
-    )  # get all clients related to the request user
-    lead = get_object_or_404(
-        leads,
-        converted_to_client=False,
-        pk=id,
-    )
 
-    # Check if plan was not exceeded
-    team_count = Client.objects.filter(team=lead.team).count()
-    plan_lim = lead.team.plan.max_clients
-    if team_count >= plan_lim:
-        messages.error(
-            request,
-            f"The team plan was exceeded",
+    model = Lead
+    pk_url_kwarg = "id"
+
+    def get_queryset(self):
+        # filter leads that was created by user and
+        # wasn't converted yet
+        return (
+            super()
+            .get_queryset()
+            .get_for_user(self.request.user)
+            .filter(converted_to_client=False)
         )
 
-        return redirect("lead:detail", lead.id)
+    def get_success_message(self, cleaned_data):
+        return f"The lead {self.object.name} was converted into a client"
 
-    Client.objects.create(
-        name=lead.name,
-        email=lead.email,
-        description=lead.description,
-        created_by=lead.created_by,
-        team=lead.team,
-    )
+    def post(self, request, *args, **kwargs):
 
-    lead.converted_to_client = True
-    lead.save()
+        self.object = self.get_object()
+        return redirect("lead:detail", id=self.object.id)
 
-    messages.success(request, "The lead was converted into a client")
-    return redirect("lead:list")
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        lead = self.object
+
+        # checks if lead convertion will not cause the
+        # client limit overflow
+        client_count = Client.objects.filter(team=lead.team).count()
+        plan_lim = lead.team.plan.max_clients
+
+        # if actually cause send message error
+        # and get back to the detailed page
+        if client_count >= plan_lim:
+            messages.error(
+                request,
+                f"The lead {lead.name} cant be converted into the client. "
+                f"Plan was exceeded: {client_count} of {plan_lim} clients",
+            )
+            return redirect("lead:detail", id=lead.id)
+
+        try:
+            client = Client.objects.create(
+                team=lead.team,
+                name=lead.name,
+                email=lead.email,
+                description=lead.description,
+                created_by=request.user,
+            )
+            lead.converted_to_client = True
+            lead.save()
+
+            messages.success(
+                request,
+                f'Lead "{lead.name}" was successfully converted to "{client.name}" client',
+            )
+            return redirect("client:detail", id=client.id)
+        except Exception as e:
+            messages.error(request, f"An error occured during conversion: {e}")
+            return redirect("lead:detail", id=lead.id)
