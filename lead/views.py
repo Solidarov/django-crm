@@ -1,10 +1,5 @@
-from django.shortcuts import (
-    render,
-    redirect,
-    get_object_or_404,
-)
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
@@ -17,18 +12,12 @@ from django.views.generic import (
     CreateView,
     View,
 )
-
 from lead.forms import (
     LeadForm,
 )
 from client.models import (
     Client,
 )
-from team.models import (
-    Team,
-    Plan,
-)
-
 from lead.models import Lead
 
 
@@ -40,7 +29,7 @@ class LeadCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """
 
     model = Lead
-    template_name = "lead/add_lead.html"
+    template_name = "lead/lead_form.html"
     form_class = LeadForm
     success_url = reverse_lazy("lead:list")
 
@@ -51,6 +40,12 @@ class LeadCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
         return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page_title"] = "Add Lead"
+        context["button_name"] = "Create"
+        return context
 
     def form_valid(self, form):
         # after the form valid check add
@@ -109,6 +104,12 @@ class LeadDetailView(LoginRequiredMixin, DetailView):
 
 
 class LeadDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
+    """
+    View for delete lead instance
+
+    <i>login required to show this view</i>
+    """
+
     model = Lead
     pk_url_kwarg = "id"
     context_object_name = "lead"
@@ -132,7 +133,7 @@ class LeadUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Lead
     form_class = LeadForm
     pk_url_kwarg = "id"
-    template_name = "lead/edit_lead.html"
+    template_name = "lead/lead_form.html"
 
     def get_queryset(self):
 
@@ -145,6 +146,12 @@ class LeadUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def get_success_message(self, cleaned_data):
         return f'The lead "{self.object.name}" has been successfully updated.'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page_title"] = f'Edit "{self.object.name}"'
+        context["button_name"] = "Edit"
+        return context
 
     def get_form_kwargs(self):
 
