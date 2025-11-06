@@ -5,6 +5,10 @@ from django.shortcuts import (
     redirect,
 )
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import (
+    ListView,
+)
 
 from client.models import (
     Client,
@@ -17,16 +21,23 @@ from client.forms import (
 )
 
 
-@login_required
-def list_clients(request):
+class ClientListView(LoginRequiredMixin, ListView):
     """
     View for listing the clients created by requested user
     """
-    clients = Client.objects.filter(created_by=request.user)
-    context = {
-        "clients": clients,
-    }
-    return render(request, "client/list_clients.html", context=context)
+
+    model = Client
+    template_name = "client/list_clients.html"
+    context_object_name = "clients"
+
+    # get all clients created by user
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .filter(created_by=self.request.user)
+            .order_by("-created_at")
+        )
 
 
 @login_required
