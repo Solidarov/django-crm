@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
     ListView,
+    DetailView,
 )
 
 from client.models import (
@@ -40,22 +41,19 @@ class ClientListView(LoginRequiredMixin, ListView):
         )
 
 
-@login_required
-def detail_client(request, id):
+class ClientDetailView(LoginRequiredMixin, DetailView):
     """
     View for list client details
     """
-    clients = Client.objects.get_for_user(
-        request.user,
-    )  # get clients related to request user
-    client = get_object_or_404(
-        clients,
-        pk=id,
-    )
-    context = {
-        "client": client,
-    }
-    return render(request, "client/detail_client.html", context=context)
+
+    model = Client
+    pk_url_kwarg = "id"
+    context_object_name = "client"
+    template_name = "client/detail_client.html"
+
+    # get clients related to request user
+    def get_queryset(self):
+        return super().get_queryset().get_for_user(self.request.user)
 
 
 @login_required
