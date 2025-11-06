@@ -12,6 +12,7 @@ from django.views.generic import (
     ListView,
     DetailView,
     DeleteView,
+    UpdateView,
 )
 
 from lead.forms import (
@@ -42,19 +43,19 @@ def add_lead(request):
 
         if form.is_valid():
 
-            # Checks if plan limit is not exceeded
-            team = form.cleaned_data.get("team")
-            team_count = Lead.objects.filter(
-                team=team, converted_to_client=False
-            ).count()
-            plan_lim = team.plan.max_leads
+            # # Checks if plan limit is not exceeded
+            # team = form.cleaned_data.get("team")
+            # team_count = Lead.objects.filter(
+            #     team=team, converted_to_client=False
+            # ).count()
+            # plan_lim = team.plan.max_leads
 
-            if team_count >= plan_lim:
-                messages.error(request, f"The plan was exceeded")
-                context = {
-                    "form": form,
-                }
-                return render(request, "lead/add_lead.html", context=context)
+            # if team_count >= plan_lim:
+            #     messages.error(request, f"The plan was exceeded")
+            #     context = {
+            #         "form": form,
+            #     }
+            #     return render(request, "lead/add_lead.html", context=context)
 
             lead = form.save(commit=False)
             lead.created_by = request.user
@@ -138,61 +139,35 @@ class LeadDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
         }
 
 
-@login_required
-def edit_lead(request, id):
+class LeadUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     """
     View for edit lead created by requested user and
     having certain id
     """
-    lead = get_object_or_404(
-        Lead,
-        created_by=request.user,
-        pk=id,
-    )
 
-    if request.method == "POST":
-        form = AddLeadForm(
-            request.POST,
-            instance=lead,
-            user=request.user,
-        )
-        if form.is_valid():
+    model = Lead
+    form_class = AddLeadForm
+    pk_url_kwarg = "id"
+    template_name = "lead/edit_lead.html"
 
-            # Checks if plan limit is not exceeded
+    def get_queryset(self):
 
-            change_team = "team" in form.changed_data  # checks if team was changed
+        # choose the object only from
+        # leads created by requested user
+        return super().get_queryset().filter(created_by=self.request.user)
 
-            team = form.cleaned_data.get("team")
-            lead_counts = Lead.objects.filter(
-                team=team, converted_to_client=False
-            ).count()
-            plan_lim = team.plan.max_leads
+    def get_success_url(self):
+        return reverse_lazy("lead:detail", kwargs={"id": self.object.id})
 
-            # checks if limit was exceeded and if team was changed
-            if lead_counts >= plan_lim and change_team:
-                messages.error(request, f"The team plan was exceeded")
-                context = {
-                    "form": form,
-                }
-                return render(request, "lead/edit_lead.html", context=context)
+    def get_success_message(self, cleaned_data):
+        return f'The lead "{self.object.name}" has been successfully updated.'
 
-            form.save()
-            messages.success(request, f"Changes have been saved")
-            return redirect("lead:detail", id=id)
-    else:
-        form = AddLeadForm(
-            instance=lead,
-            user=request.user,
-        )
+    def get_form_kwargs(self):
 
-    context = {
-        "form": form,
-    }
-    return render(
-        request,
-        "lead/edit_lead.html",
-        context=context,
-    )
+        # pass the user to the form
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
 
 @login_required
