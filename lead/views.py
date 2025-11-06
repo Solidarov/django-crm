@@ -13,10 +13,11 @@ from django.views.generic import (
     DetailView,
     DeleteView,
     UpdateView,
+    CreateView,
 )
 
 from lead.forms import (
-    AddLeadForm,
+    LeadForm,
 )
 from client.models import (
     Client,
@@ -29,52 +30,33 @@ from team.models import (
 from lead.models import Lead
 
 
-@login_required
-def add_lead(request):
+class LeadCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """
-    View for create a new lead to the database
-    <strong>(login required)</strong>
+    View for create new Lead instance
+
+    <i>login required to show this page</i>
     """
-    if request.method == "POST":
-        form = AddLeadForm(
-            request.POST,
-            user=request.user,
-        )
 
-        if form.is_valid():
+    model = Lead
+    template_name = "lead/add_lead.html"
+    form_class = LeadForm
+    success_url = reverse_lazy("lead:list")
 
-            # # Checks if plan limit is not exceeded
-            # team = form.cleaned_data.get("team")
-            # team_count = Lead.objects.filter(
-            #     team=team, converted_to_client=False
-            # ).count()
-            # plan_lim = team.plan.max_leads
+    def get_success_message(self, cleaned_data):
+        return f'The lead "{self.object.name}" have been successfully added'
 
-            # if team_count >= plan_lim:
-            #     messages.error(request, f"The plan was exceeded")
-            #     context = {
-            #         "form": form,
-            #     }
-            #     return render(request, "lead/add_lead.html", context=context)
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
-            lead = form.save(commit=False)
-            lead.created_by = request.user
-            lead.save()
-
-            messages.success(
-                request, f'The lead "{lead.name}" have been successfully added'
-            )
-
-            return redirect("lead:list")
-    else:
-        form = AddLeadForm(
-            user=request.user,
-        )
-
-    context = {
-        "form": form,
-    }
-    return render(request, "lead/add_lead.html", context=context)
+    def form_valid(self, form):
+        # after the form valid check add
+        # created_by value to the instance and save to db
+        self.object = form.save(commit=False)
+        self.object.created_by = self.request.user
+        self.object.save()
+        return super().form_valid(form)
 
 
 class LeadsListView(LoginRequiredMixin, ListView):
@@ -146,7 +128,7 @@ class LeadUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     """
 
     model = Lead
-    form_class = AddLeadForm
+    form_class = LeadForm
     pk_url_kwarg = "id"
     template_name = "lead/edit_lead.html"
 

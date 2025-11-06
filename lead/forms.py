@@ -9,9 +9,9 @@ from team.models import (
 )
 
 
-class AddLeadForm(forms.ModelForm):
+class LeadForm(forms.ModelForm):
     """
-    Form for create new Lead model
+    Form for Lead model
     """
 
     class Meta:
