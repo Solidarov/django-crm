@@ -1,9 +1,11 @@
+{% load static %}
+
 <!doctype html>
 <html>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="{% static 'core/css/main_output.css' %}">
     <title>{% block title %}{% endblock %} | Django CRM</title>
   </head>
   <body class="flex flex-col min-h-screen">

@@ -3,11 +3,23 @@ from django.shortcuts import (
     redirect,
     get_object_or_404,
 )
+from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from django.contrib.messages.views import SuccessMessageMixin
+from django.views.generic.detail import SingleObjectMixin
+from django.views.generic import (
+    ListView,
+    DetailView,
+    DeleteView,
+    UpdateView,
+    CreateView,
+    View,
+)
 
 from lead.forms import (
-    AddLeadForm,
+    LeadForm,
 )
 from client.models import (
     Client,
@@ -20,195 +32,192 @@ from team.models import (
 from lead.models import Lead
 
 
-@login_required
-def add_lead(request):
+class LeadCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """
-    View for create a new lead to the database
-    <strong>(login required)</strong>
+    View for create new Lead instance
+
+    <i>login required to show this page</i>
     """
-    if request.method == "POST":
-        form = AddLeadForm(
-            request.POST,
-            user=request.user,
+
+    model = Lead
+    template_name = "lead/add_lead.html"
+    form_class = LeadForm
+    success_url = reverse_lazy("lead:list")
+
+    def get_success_message(self, cleaned_data):
+        return f'The lead "{self.object.name}" have been successfully added'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        # after the form valid check add
+        # created_by value to the instance and save to db
+        self.object = form.save(commit=False)
+        self.object.created_by = self.request.user
+        self.object.save()
+        return super().form_valid(form)
+
+
+class LeadsListView(LoginRequiredMixin, ListView):
+    """
+    List view for list all leads created by requested user
+
+    <i>login required to show this page</i>
+    """
+
+    model = Lead
+    template_name = "lead/list_leads.html"
+    context_object_name = "leads"
+
+    # Modify default Lead.objects.all()
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        queryset = queryset.filter(
+            created_by=self.request.user,
+            converted_to_client=False,
         )
 
-        if form.is_valid():
+        return queryset.order_by("-created_at")
 
-            # Checks if plan limit is not exceeded
-            team = form.cleaned_data.get("team")
-            team_count = Lead.objects.filter(
-                team=team, converted_to_client=False
-            ).count()
-            plan_lim = team.plan.max_leads
 
-            if team_count >= plan_lim:
-                messages.error(request, f"The plan was exceeded")
-                context = {
-                    "form": form,
-                }
-                return render(request, "lead/add_lead.html", context=context)
+class LeadDetailView(LoginRequiredMixin, DetailView):
+    """
+    Detail view for list lead details
 
-            lead = form.save(commit=False)
-            lead.created_by = request.user
-            lead.save()
+    <i>login required to show this page</i>
+    """
 
-            messages.success(
-                request, f'The lead "{lead.name}" have been successfully added'
-            )
+    model = Lead
+    pk_url_kwarg = "id"
+    context_object_name = "lead"
+    template_name = "lead/detail_lead.html"
 
-            return redirect("lead:list")
-    else:
-        form = AddLeadForm(
-            user=request.user,
+    def get_queryset(self):
+        # return all Lead records related to the user
+        # and filter if lead was not converted to client
+        # (check LeadQuerySet to more info)
+        return (
+            super()
+            .get_queryset()
+            .get_for_user(self.request.user)
+            .filter(converted_to_client=False)
         )
 
-    context = {
-        "form": form,
-    }
-    return render(request, "lead/add_lead.html", context=context)
+
+class LeadDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
+    model = Lead
+    pk_url_kwarg = "id"
+    context_object_name = "lead"
+    success_url = reverse_lazy("lead:list")
+
+    def get_queryset(self):
+        return super().get_queryset().filter(created_by=self.request.user)
+
+    def get_success_message(self, cleaned_data):
+        return 'The lead "%(name)s" have been successfully deleted' % {
+            "name": self.object.name
+        }
 
 
-@login_required
-def list_leads(request):
-    """
-    View for list all leads created by requested user
-    """
-    leads = Lead.objects.filter(created_by=request.user, converted_to_client=False)
-    context = {
-        "leads": leads,
-    }
-    return render(request, "lead/list_leads.html", context=context)
-
-
-@login_required
-def lead_detail(request, id):
-    """
-    View for list lead details
-    """
-    leads = Lead.objects.get_for_user(
-        request.user
-    )  # get all clients related to the request user
-    lead = get_object_or_404(
-        leads,
-        pk=id,
-    )
-    context = {
-        "lead": lead,
-    }
-
-    return render(
-        request,
-        "lead/detail_lead.html",
-        context=context,
-    )
-
-
-@login_required
-def delete_lead(request, id):
-    """
-    View for delete having certain <i>id</i> and
-    created by <i>requested user</i>
-    """
-    lead = get_object_or_404(Lead, created_by=request.user, pk=id)
-    lead.delete()
-
-    messages.success(request, f'The lead "{lead.name}" have been successfully deleted')
-
-    return redirect("lead:list")
-
-
-@login_required
-def edit_lead(request, id):
+class LeadUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     """
     View for edit lead created by requested user and
     having certain id
     """
-    lead = get_object_or_404(
-        Lead,
-        created_by=request.user,
-        pk=id,
-    )
 
-    if request.method == "POST":
-        form = AddLeadForm(
-            request.POST,
-            instance=lead,
-            user=request.user,
-        )
-        if form.is_valid():
+    model = Lead
+    form_class = LeadForm
+    pk_url_kwarg = "id"
+    template_name = "lead/edit_lead.html"
 
-            # Checks if plan limit is not exceeded
+    def get_queryset(self):
 
-            change_team = "team" in form.changed_data  # checks if team was changed
+        # choose the object only from
+        # leads created by requested user
+        return super().get_queryset().filter(created_by=self.request.user)
 
-            team = form.cleaned_data.get("team")
-            lead_counts = Lead.objects.filter(
-                team=team, converted_to_client=False
-            ).count()
-            plan_lim = team.plan.max_leads
+    def get_success_url(self):
+        return reverse_lazy("lead:detail", kwargs={"id": self.object.id})
 
-            # checks if limit was exceeded and if team was changed
-            if lead_counts >= plan_lim and change_team:
-                messages.error(request, f"The team plan was exceeded")
-                context = {
-                    "form": form,
-                }
-                return render(request, "lead/edit_lead.html", context=context)
+    def get_success_message(self, cleaned_data):
+        return f'The lead "{self.object.name}" has been successfully updated.'
 
-            form.save()
-            messages.success(request, f"Changes have been saved")
-            return redirect("lead:detail", id=id)
-    else:
-        form = AddLeadForm(
-            instance=lead,
-            user=request.user,
-        )
+    def get_form_kwargs(self):
 
-    context = {
-        "form": form,
-    }
-    return render(
-        request,
-        "lead/edit_lead.html",
-        context=context,
-    )
+        # pass the user to the form
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
 
-@login_required
-def convert_to_client(request, id):
+class ConvertToClientView(
+    LoginRequiredMixin, SuccessMessageMixin, SingleObjectMixin, View
+):
     """
-    Convert lead into the client and add it into the database
+    Convert lead into the client and add it into
+    the database
     """
-    leads = Lead.objects.get_for_user(
-        request.user
-    )  # get all clients related to the request user
-    lead = get_object_or_404(
-        leads,
-        converted_to_client=False,
-        pk=id,
-    )
 
-    # Check if plan was not exceeded
-    team_count = Client.objects.filter(team=lead.team).count()
-    plan_lim = lead.team.plan.max_clients
-    if team_count >= plan_lim:
-        messages.error(
-            request,
-            f"The team plan was exceeded",
+    model = Lead
+    pk_url_kwarg = "id"
+
+    def get_queryset(self):
+        # filter leads that was created by user and
+        # wasn't converted yet
+        return (
+            super()
+            .get_queryset()
+            .get_for_user(self.request.user)
+            .filter(converted_to_client=False)
         )
 
-        return redirect("lead:detail", lead.id)
+    def get_success_message(self, cleaned_data):
+        return f"The lead {self.object.name} was converted into a client"
 
-    Client.objects.create(
-        name=lead.name,
-        email=lead.email,
-        description=lead.description,
-        created_by=lead.created_by,
-        team=lead.team,
-    )
+    def post(self, request, *args, **kwargs):
 
-    lead.converted_to_client = True
-    lead.save()
+        self.object = self.get_object()
+        return redirect("lead:detail", id=self.object.id)
 
-    messages.success(request, "The lead was converted into a client")
-    return redirect("lead:list")
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        lead = self.object
+
+        # checks if lead convertion will not cause the
+        # client limit overflow
+        client_count = Client.objects.filter(team=lead.team).count()
+        plan_lim = lead.team.plan.max_clients
+
+        # if actually cause send message error
+        # and get back to the detailed page
+        if client_count >= plan_lim:
+            messages.error(
+                request,
+                f"The lead {lead.name} cant be converted into the client. "
+                f"Plan was exceeded: {client_count} of {plan_lim} clients",
+            )
+            return redirect("lead:detail", id=lead.id)
+
+        try:
+            client = Client.objects.create(
+                team=lead.team,
+                name=lead.name,
+                email=lead.email,
+                description=lead.description,
+                created_by=request.user,
+            )
+            lead.converted_to_client = True
+            lead.save()
+
+            messages.success(
+                request,
+                f'Lead "{lead.name}" was successfully converted to "{client.name}" client',
+            )
+            return redirect("client:detail", id=client.id)
+        except Exception as e:
+            messages.error(request, f"An error occured during conversion: {e}")
+            return redirect("lead:detail", id=lead.id)

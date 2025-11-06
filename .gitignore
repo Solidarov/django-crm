@@ -214,3 +214,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Dependency directories
+node_modules/
+
+# Generated Tailwind CSS output file
+*_output.css 
