@@ -1,14 +1,17 @@
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse_lazy
 from django.shortcuts import (
     render,
     get_object_or_404,
     redirect,
 )
 from django.contrib import messages
+from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
     ListView,
     DetailView,
+    CreateView,
 )
 
 from client.models import (
@@ -18,7 +21,7 @@ from team.models import (
     Plan,
 )
 from client.forms import (
-    AddClientForm,
+    ClientForm,
 )
 
 
@@ -56,49 +59,31 @@ class ClientDetailView(LoginRequiredMixin, DetailView):
         return super().get_queryset().get_for_user(self.request.user)
 
 
-@login_required
-def add_client(request):
+class ClientCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """
     View for adding a new client
     """
-    if request.method == "POST":
-        form = AddClientForm(request.POST, user=request.user)
 
-        if form.is_valid():
+    model = Client
+    form_class = ClientForm
+    template_name = "client/add_client.html"
+    success_url = reverse_lazy("client:list")
 
-            # Check if plan limit is not exceeded
-            team = form.cleaned_data.get("team")
-            client_count = Client.objects.filter(team=team).count()
-            plan_lim = team.plan.max_clients
+    def get_success_message(self, cleaned_data):
+        return f'The client "{self.object.name}" has been created'
 
-            if client_count >= plan_lim:
-                messages.error(request, f"The plan was exceeded")
-                context = {
-                    "form": form,
-                }
-                return render(request, "client/add_client.html", context=context)
+    def form_valid(self, form):
+        # add value to created_by field and save form
+        self.object = form.save(commit=False)
+        self.object.created_by = self.request.user
+        self.object.save()
+        return super().form_valid(form)
 
-            client = form.save(commit=False)
-            client.created_by = request.user
-            client.save()
-
-            messages.success(
-                request,
-                "The new client has been created",
-            )
-
-            return redirect("client:list")
-    else:
-        form = AddClientForm(user=request.user)
-
-    context = {
-        "form": form,
-    }
-    return render(
-        request,
-        "client/add_client.html",
-        context=context,
-    )
+    def get_form_kwargs(self):
+        # specify user variable for the form init
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
 
 @login_required
@@ -131,21 +116,8 @@ def edit_client(request, id):
     client = get_object_or_404(Client, created_by=request.user, pk=id)
 
     if request.method == "POST":
-        form = AddClientForm(request.POST, instance=client, user=request.user)
+        form = ClientForm(request.POST, instance=client, user=request.user)
         if form.is_valid():
-
-            changed_team = "team" in form.changed_data  # checks if team was changed
-            # Check if plan limit is not exceeded
-            team = form.cleaned_data.get("team")
-            client_count = Client.objects.filter(team=team).count()
-            plan_lim = team.plan.max_clients
-
-            if client_count >= plan_lim and changed_team:
-                messages.error(request, f"The plan was exceeded")
-                context = {
-                    "form": form,
-                }
-                return render(request, "client/edit_client.html", context=context)
 
             form.save()
 
@@ -157,7 +129,7 @@ def edit_client(request, id):
             return redirect("client:detail", id=id)
 
     else:
-        form = AddClientForm(instance=client, user=request.user)
+        form = ClientForm(instance=client, user=request.user)
 
     context = {
         "form": form,
