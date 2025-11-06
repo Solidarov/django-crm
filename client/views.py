@@ -12,6 +12,7 @@ from django.views.generic import (
     ListView,
     DetailView,
     CreateView,
+    DeleteView,
 )
 
 from client.models import (
@@ -86,25 +87,23 @@ class ClientCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return kwargs
 
 
-@login_required
-def delete_client(request, id):
+class ClientDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     """
     View for deleting a client created by requested user
     and having a certain id
     """
-    client = get_object_or_404(
-        Client,
-        created_by=request.user,
-        pk=id,
-    )
-    client.delete()
 
-    messages.success(
-        request,
-        f"The {client.name} client was successfully deleted",
-    )
+    model = Client
+    success_url = reverse_lazy("client:list")
+    pk_url_kwarg = "id"
+    context_object_name = "client"
 
-    return redirect("client:list")
+    def get_success_message(self, cleaned_data):
+        return f'The client "{self.object.name}" was deleted successfully'
+
+    def get_queryset(self):
+        # get queryset created by current user
+        return super().get_queryset().filter(created_by=self.request.user)
 
 
 @login_required
