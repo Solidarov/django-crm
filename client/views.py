@@ -13,6 +13,7 @@ from django.views.generic import (
     DetailView,
     CreateView,
     DeleteView,
+    UpdateView,
 )
 
 from client.models import (
@@ -67,7 +68,7 @@ class ClientCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     model = Client
     form_class = ClientForm
-    template_name = "client/add_client.html"
+    template_name = "client/client_form.html"
     success_url = reverse_lazy("client:list")
 
     def get_success_message(self, cleaned_data):
@@ -85,6 +86,12 @@ class ClientCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
         return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page_title"] = f"Create new client"
+        context["button_name"] = "Create"
+        return context
 
 
 class ClientDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
@@ -106,35 +113,34 @@ class ClientDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
         return super().get_queryset().filter(created_by=self.request.user)
 
 
-@login_required
-def edit_client(request, id):
+class ClientUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     """
     View for edit client, created by requested user and
     having a certain id
     """
-    client = get_object_or_404(Client, created_by=request.user, pk=id)
 
-    if request.method == "POST":
-        form = ClientForm(request.POST, instance=client, user=request.user)
-        if form.is_valid():
+    model = Client
+    form_class = ClientForm
+    pk_url_kwarg = "id"
+    template_name = "client/client_form.html"
 
-            form.save()
+    def get_queryset(self):
+        return super().get_queryset().filter(created_by=self.request.user)
 
-            messages.success(
-                request,
-                "The client was successfully updated",
-            )
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
-            return redirect("client:detail", id=id)
+    def get_success_url(self):
+        return reverse_lazy("client:detail", kwargs={"id": self.object.id})
 
-    else:
-        form = ClientForm(instance=client, user=request.user)
+    def get_success_message(self, cleaned_data):
+        return f'The client "{self.object.name}" has been successfully updated.'
 
-    context = {
-        "form": form,
-    }
-    return render(
-        request,
-        "client/edit_client.html",
-        context=context,
-    )
+    def get_context_data(self, **kwargs):
+        # pass additional data to client_form
+        context = super().get_context_data(**kwargs)
+        context["page_title"] = f'Edit "{self.object.name}"'
+        context["button_name"] = "Edit"
+        return context
