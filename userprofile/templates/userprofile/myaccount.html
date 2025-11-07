@@ -15,6 +15,17 @@
             </div>  
         </div>
         
+        {% if request.user.email %}
+            <div class="flex gap-4 mb-2">
+                <div class="pr-3">
+                    <strong>Email adr.:</strong> 
+                </div>
+                <div class="flex-1 pl-2">
+                    {{ request.user.email }}
+                </div>  
+            </div>
+        {% endif %}
+
         <div class="flex gap-4 mb-4">
             <div class="pr-5">
                 <strong>Teams:</strong>
