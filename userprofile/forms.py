@@ -30,8 +30,8 @@ class CustomSignUpForm(UserCreationForm):
         # check if basic plan exist
         # if not then create new with default values
         basic_plan, _ = Plan.objects.get_or_create(
-            pk=1,
-            defaults={"name": "Basic", "price": 10, "max_leads": 2, "max_clients": 2},
+            name="Basic",
+            defaults={"price": 10, "max_leads": 2, "max_clients": 2},
         )
 
         # create new team for the new user
