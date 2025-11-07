@@ -49,7 +49,7 @@ class ClientForm(forms.ModelForm):
                 return cleaned_data
 
         # if team was changed or newly created record
-        # than check if client does not exceed team plan limit
+        # then check if client does not exceed team plan limit
         if new_team:
             client_count = Client.objects.filter(team=new_team).count()
             plan_lim = new_team.plan.max_clients
@@ -58,7 +58,7 @@ class ClientForm(forms.ModelForm):
             if client_count >= plan_lim:
                 raise forms.ValidationError(
                     f"The team plan for '{new_team.name}' was exceeded. "
-                    f"It already has {client_count} of {plan_lim} leads. "
+                    f"It already has {client_count} of {plan_lim} clients. "
                 )
 
         return cleaned_data
