@@ -6,20 +6,20 @@ from django.contrib.auth.views import (
 )
 
 from userprofile.views import (
-    myaccount,
     SignUpFormView,
+    MyAccountTemplateView,
 )
 
 app_name = "userprofile"
 
 urlpatterns = [
+    path("my-account/", MyAccountTemplateView.as_view(), name="myaccount"),
     path("sign-up/", SignUpFormView.as_view(), name="signup"),
     path(
         "log-in/",
         LoginView.as_view(template_name="userprofile/login.html"),
         name="login",
     ),
-    path("my-account/", myaccount, name="myaccount"),
     # actual logout logic
     path(
         "logout/",
