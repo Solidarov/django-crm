@@ -1,25 +1,24 @@
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import ListView
 
 from client.models import Client
 from lead.models import Lead
 
 
-@login_required
-def dashboard(request):
+class DashboardListView(LoginRequiredMixin, ListView):
     """
     View for dashboard pages with all client and leads realated to the requested user
     """
 
-    leads = Lead.objects.get_for_user(request.user).filter(converted_to_client=False)
-    clients = Client.objects.get_for_user(request.user)
+    model = Lead
+    template_name = "dashboard/dashboard.html"
+    context_object_name = "leads"
 
-    context = {
-        "leads": leads,
-        "clients": clients,
-    }
-    return render(
-        request,
-        "dashboard/dashboard.html",
-        context=context,
-    )
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.get_for_user(self.request.user).filter(converted_to_client=False)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["clients"] = Client.objects.get_for_user(self.request.user)
+        return context
