@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.views.generic import FormView
@@ -35,15 +34,6 @@ class SignUpFormView(FormView):
         )
 
         return super().form_valid(form)
-
-
-@login_required
-def user_logout(request):
-    """
-    View for logout requested user
-    """
-    logout(request)
-    return render(request, "userprofile/logout.html")
 
 
 @login_required
