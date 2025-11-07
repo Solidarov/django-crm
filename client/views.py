@@ -1,160 +1,136 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import (
-    render,
-    get_object_or_404,
-    redirect,
+from django.urls import reverse_lazy
+from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import (
+    ListView,
+    DetailView,
+    CreateView,
+    DeleteView,
+    UpdateView,
 )
-from django.contrib import messages
 
 from client.models import (
     Client,
 )
-from team.models import (
-    Plan,
-)
 from client.forms import (
-    AddClientForm,
+    ClientForm,
 )
 
 
-@login_required
-def list_clients(request):
+class ClientListView(LoginRequiredMixin, ListView):
     """
     View for listing the clients created by requested user
     """
-    clients = Client.objects.filter(created_by=request.user)
-    context = {
-        "clients": clients,
-    }
-    return render(request, "client/list_clients.html", context=context)
+
+    model = Client
+    template_name = "client/list_clients.html"
+    context_object_name = "clients"
+
+    # get all clients created by user
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .filter(created_by=self.request.user)
+            .order_by("-created_at")
+        )
 
 
-@login_required
-def detail_client(request, id):
+class ClientDetailView(LoginRequiredMixin, DetailView):
     """
     View for list client details
     """
-    clients = Client.objects.get_for_user(
-        request.user,
-    )  # get clients related to request user
-    client = get_object_or_404(
-        clients,
-        pk=id,
-    )
-    context = {
-        "client": client,
-    }
-    return render(request, "client/detail_client.html", context=context)
+
+    model = Client
+    pk_url_kwarg = "id"
+    context_object_name = "client"
+    template_name = "client/detail_client.html"
+
+    # get clients related to request user
+    def get_queryset(self):
+        return super().get_queryset().get_for_user(self.request.user)
 
 
-@login_required
-def add_client(request):
+class ClientCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     """
     View for adding a new client
     """
-    if request.method == "POST":
-        form = AddClientForm(request.POST, user=request.user)
 
-        if form.is_valid():
+    model = Client
+    form_class = ClientForm
+    template_name = "client/client_form.html"
+    success_url = reverse_lazy("client:list")
 
-            # Check if plan limit is not exceeded
-            team = form.cleaned_data.get("team")
-            client_count = Client.objects.filter(team=team).count()
-            plan_lim = team.plan.max_clients
+    def get_success_message(self, cleaned_data):
+        return f'The client "{self.object.name}" has been created'
 
-            if client_count >= plan_lim:
-                messages.error(request, f"The plan was exceeded")
-                context = {
-                    "form": form,
-                }
-                return render(request, "client/add_client.html", context=context)
+    def form_valid(self, form):
+        # add value to created_by field and save form
+        self.object = form.save(commit=False)
+        self.object.created_by = self.request.user
+        self.object.save()
+        return super().form_valid(form)
 
-            client = form.save(commit=False)
-            client.created_by = request.user
-            client.save()
+    def get_form_kwargs(self):
+        # specify user variable for the form init
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
-            messages.success(
-                request,
-                "The new client has been created",
-            )
-
-            return redirect("client:list")
-    else:
-        form = AddClientForm(user=request.user)
-
-    context = {
-        "form": form,
-    }
-    return render(
-        request,
-        "client/add_client.html",
-        context=context,
-    )
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page_title"] = f"Create new client"
+        context["button_name"] = "Create"
+        return context
 
 
-@login_required
-def delete_client(request, id):
+class ClientDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     """
     View for deleting a client created by requested user
     and having a certain id
     """
-    client = get_object_or_404(
-        Client,
-        created_by=request.user,
-        pk=id,
-    )
-    client.delete()
 
-    messages.success(
-        request,
-        f"The {client.name} client was successfully deleted",
-    )
+    model = Client
+    success_url = reverse_lazy("client:list")
+    pk_url_kwarg = "id"
+    context_object_name = "client"
 
-    return redirect("client:list")
+    def get_success_message(self, cleaned_data):
+        return f'The client "{self.object.name}" was deleted successfully'
+
+    def get_queryset(self):
+        # get queryset created by current user
+        return super().get_queryset().filter(created_by=self.request.user)
 
 
-@login_required
-def edit_client(request, id):
+class ClientUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     """
     View for edit client, created by requested user and
     having a certain id
     """
-    client = get_object_or_404(Client, created_by=request.user, pk=id)
 
-    if request.method == "POST":
-        form = AddClientForm(request.POST, instance=client, user=request.user)
-        if form.is_valid():
+    model = Client
+    form_class = ClientForm
+    pk_url_kwarg = "id"
+    template_name = "client/client_form.html"
 
-            changed_team = "team" in form.changed_data  # checks if team was changed
-            # Check if plan limit is not exceeded
-            team = form.cleaned_data.get("team")
-            client_count = Client.objects.filter(team=team).count()
-            plan_lim = team.plan.max_clients
+    def get_queryset(self):
+        return super().get_queryset().filter(created_by=self.request.user)
 
-            if client_count >= plan_lim and changed_team:
-                messages.error(request, f"The plan was exceeded")
-                context = {
-                    "form": form,
-                }
-                return render(request, "client/edit_client.html", context=context)
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
-            form.save()
+    def get_success_url(self):
+        return reverse_lazy("client:detail", kwargs={"id": self.object.id})
 
-            messages.success(
-                request,
-                "The client was successfully updated",
-            )
+    def get_success_message(self, cleaned_data):
+        return f'The client "{self.object.name}" has been successfully updated.'
 
-            return redirect("client:detail", id=id)
-
-    else:
-        form = AddClientForm(instance=client, user=request.user)
-
-    context = {
-        "form": form,
-    }
-    return render(
-        request,
-        "client/edit_client.html",
-        context=context,
-    )
+    def get_context_data(self, **kwargs):
+        # pass additional data to client_form
+        context = super().get_context_data(**kwargs)
+        context["page_title"] = f'Edit "{self.object.name}"'
+        context["button_name"] = "Edit"
+        return context

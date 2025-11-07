@@ -8,9 +8,9 @@ from team.models import (
 )
 
 
-class AddClientForm(forms.ModelForm):
+class ClientForm(forms.ModelForm):
     """
-    Form for adding a new client instance to database
+    Form for Client model
     """
 
     class Meta:
@@ -33,3 +33,32 @@ class AddClientForm(forms.ModelForm):
                 self.fields["team"].queryset = Team.objects.filter(members=user)
             else:
                 self.fields["team"].queryset = Team.objects.none()
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        new_team = cleaned_data.get("team")
+
+        # check if newly created instance
+        if self.instance.pk:
+            old_team = self.instance.team
+
+            # if edited check if team was changed
+            team_changed = old_team != new_team
+            if not team_changed:
+                return cleaned_data
+
+        # if team was changed or newly created record
+        # then check if client does not exceed team plan limit
+        if new_team:
+            client_count = Client.objects.filter(team=new_team).count()
+            plan_lim = new_team.plan.max_clients
+
+            # raise if exceeded
+            if client_count >= plan_lim:
+                raise forms.ValidationError(
+                    f"The team plan for '{new_team.name}' was exceeded. "
+                    f"It already has {client_count} of {plan_lim} clients. "
+                )
+
+        return cleaned_data
