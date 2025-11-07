@@ -1,90 +1,58 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import logout
-from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.urls import reverse_lazy
+from django.contrib.auth import login
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import (
+    FormView,
+    TemplateView,
+)
 
-from userprofile.models import UserProfile
+from userprofile.forms import CustomSignUpForm
 from team.models import (
     Team,
-    Plan,
 )
 
 
-def signup(request):
+class SignUpFormView(FormView):
     """
-        View for creating <b>User</b> along with <b>UserProfile</b> and Team
-        \nRender <i>'userprofile/signup.html'</i> template
-    with <i>UserCreationForm</i> as 'form'.
+    View for creating <b>User</b> along
+    with <b>UserProfile</b>, <b>Team</b>
+    and <b>Basic Plan</b> if it doesn't exist
     """
-    if request.method == "POST":
-        form = UserCreationForm(request.POST)
 
-        if form.is_valid():
-            user = form.save()
+    form_class = CustomSignUpForm
+    template_name = "userprofile/signup.html"
+    success_url = reverse_lazy("dashboard:dashboard")
 
-            UserProfile.objects.create(user=user)
+    def form_valid(self, form):
+        user = form.save()
 
-            plan_exist = Plan.objects.all().exists()
-            if not plan_exist:
-                plan = Plan.objects.create(
-                    name="Basic",
-                    price=10,
-                    max_leads=2,
-                    max_clients=2,
-                )
-            else:
-                plan = Plan.objects.first()
+        login(self.request, user)
 
-            team = Team.objects.create(
-                name=f"{user.username}_team",
-                created_by=user,
-                plan=plan,
-            )
-            team.members.add(user)
-            team.save()
+        messages.success(
+            self.request,
+            f"The user {user.username} was created successfully!",
+        )
 
-            return redirect("userprofile:login")
-    else:
-
-        form = UserCreationForm()
-
-    return render(
-        request,
-        "userprofile/signup.html",
-        {
-            "form": form,
-        },
-    )
+        return super().form_valid(form)
 
 
-@login_required
-def user_logout(request):
-    """
-    View for logout requested user
-    """
-    logout(request)
-    return render(request, "userprofile/logout.html")
-
-
-@login_required
-def myaccount(request):
+class MyAccountTemplateView(LoginRequiredMixin, TemplateView):
     """
     Renders the "My account" page with all
     teams user involved in
     """
 
-    q_created_by = Q(created_by=request.user)
-    q_member = Q(members=request.user)
-    query = q_created_by | q_member
+    template_name = "userprofile/myaccount.html"
 
-    teams = Team.objects.filter(query).distinct()
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
-    context = {
-        "teams": teams,
-    }
-    return render(
-        request,
-        "userprofile/myaccount.html",
-        context=context,
-    )
+        q_created_by = Q(created_by=self.request.user)
+        q_member = Q(members=self.request.user)
+        query = q_created_by | q_member
+        teams = Team.objects.filter(query).distinct()
+        context["teams"] = teams
+
+        return context

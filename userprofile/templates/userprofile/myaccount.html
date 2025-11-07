@@ -15,6 +15,17 @@
             </div>  
         </div>
         
+        {% if request.user.email %}
+            <div class="flex gap-4 mb-2">
+                <div class="pr-3">
+                    <strong>Email adr.:</strong> 
+                </div>
+                <div class="flex-1 pl-2">
+                    {{ request.user.email }}
+                </div>  
+            </div>
+        {% endif %}
+
         <div class="flex gap-4 mb-4">
             <div class="pr-5">
                 <strong>Teams:</strong>
@@ -38,8 +49,11 @@
 
         <hr class="my-4 mb-6 text-gray-200 border-1">
 
-        <a href="{% url 'userprofile:logout' %}" class="py-3 px-6 bg-red-600 rounded-xl text-white">
-                Log Out
-        </a>
+        <form method="post" action="{% url 'userprofile:logout' %}">
+            {% csrf_token %}
+            <button class="py-3 px-6 bg-red-600 rounded-xl text-white">
+                    Log Out
+            </button>
+        </form>
     </div>
 {% endblock %}
