@@ -18,7 +18,7 @@ class SignUpFormView(FormView):
     """
     View for creating <b>User</b> along
     with <b>UserProfile</b>, <b>Team</b>
-    and <b>Basic Plan</b> if doesn't exist
+    and <b>Basic Plan</b> if it doesn't exist
     """
 
     form_class = CustomSignUpForm

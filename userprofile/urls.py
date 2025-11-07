@@ -28,7 +28,7 @@ urlpatterns = [
         ),
         name="logout",
     ),
-    # conformation of successfull logout
+    # confirmation of successful logout
     path(
         "logout/done",
         TemplateView.as_view(
