@@ -17,33 +17,28 @@ Teal CRM is a lightweight CRM built with Django that helps track Leads and Clien
 - Teams (workspaces) with per-user default team; Plans limiting max leads/clients ([team/models.py](team/models.py))
 - Dashboard overview for leads and clients ([dashboard/views.py](dashboard/views.py))
 - Admin to manage Teams and Plans ([team/admin.py](team/admin.py))
-- Tailwind via CDN for simple styling ([core/templates/core/base.html](core/templates/core/base.html))
 
 ## 🛠️ Technologies Used
 - Python 3.11+
 - Django 5.2
 - PostgreSQL
+- npm package manager
+- Tailwind CSS
 - python-decouple for environment variables
-- Tailwind CSS (CDN)
-- Django messages and template system
 
 ## 🏃 How to Run Locally
 
 1) Prerequisites (Linux)
-- Python 3.11+, pip, virtualenv
+- Python 3.11+ (pip, virtualenv)
 - PostgreSQL 14+ (or compatible)
+- Node.js 22.14+
+- npm 11.6+
 - Git
 
-Install PostgreSQL (Ubuntu/Debian):
-```bash
-sudo apt update
-sudo apt install postgresql postgresql-contrib
-```
 
 2) Clone the repository
 ```bash
-git clone https://github.com/Solidarov/lucid-landing-page.git
-cd <your-repo>/django-crm
+git clone https://github.com/Solidarov/django-crm.git
 ```
 
 3) Create and activate a virtual environment
@@ -54,7 +49,7 @@ source .venv/bin/activate
 
 4) Install dependencies
 ```bash
-pip install -r requirements.txt
+pip install -r ./django-crm/requirements.txt
 ```
 
 5) Create the database and user (PostgreSQL)
@@ -62,6 +57,11 @@ pip install -r requirements.txt
 sudo -u postgres psql
 -- In the psql shell:
 CREATE USER <your-user> WITH PASSWORD '<your-pass>';
+
+ALTER ROLE <your-user> SET client_encoding TO 'utf8';
+ALTER ROLE <your-user> SET default_transaction_isolation TO 'read committed';
+ALTER ROLE <your-user> SET timezone TO 'UTC';
+
 CREATE DATABASE <your-db> OWNER <your-user>;
 GRANT ALL PRIVILEGES ON DATABASE <your-db> TO <your-user>;
 \q
@@ -87,62 +87,22 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
-8) (Optional) Seed minimal business data
+8) Install npm package manager dependencies
+```bash
+npm ci
+```
+
+9) Build Tailwind CSS file
+```bash
+npx @tailwindcss/cli -i ./core/static/core/css/main.css -o ./core/static/core/css/main_output.css
+``` 
+
+10) (Optional) Seed minimal business data
 - Log in to the admin at http://127.0.0.1:8000/admin/
-- Create at least one Plan under Team > Plans (fields: name, max_leads, max_clients, etc.)
-- Sign up via the app or use your superuser to create a normal user; ensure the user’s Team has a Plan assigned (via Teams UI or Admin).
+- Create the one Basic Plan under Team > Plans (name "Basic" is required)
+- Sign up via the app or use your superuser to create a normal user; ensure the user’s Team has a Basic Plan assigned (via Teams UI or Admin).
 
-9) Run the development server
+11) Run the development server
 ```bash
 python manage.py runserver
 ```
-Notes
-- Settings use python-decouple to read environment from .env ([crm_core/settings.py](crm_core/settings.py)).
-
-## 🏃 Run manually (development)
-
-1. Activate your virtual environment
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-2. Install dependencies
-```bash
-pip install -r requirements.txt
-```
-
-3. Create a `.env` file next to [`crm_core/settings.py`](crm_core/settings.py) with at least:
-```env
-SECRET_KEY=replace-with-a-strong-secret-key
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
-
-DB_NAME=<your-db>
-DB_USER=<your-user>
-DB_PASSWORD=<your-pass>
-DB_HOST=localhost
-DB_PORT=5432
-```
-
-4. Apply database migrations and create a superuser
-```bash
-python manage.py migrate
-python manage.py createsuperuser
-```
-
-5. (Development-only) Uploaded media and static files
-- While DEBUG=True, Django serves static files from `STATICFILES_DIRS` and media using the development server (see [`crm_core/settings.py`](crm_core/settings.py) and the DEBUG-only static handling in [`crm_core/urls.py`](crm_core/urls.py)).
-- Tailwind is loaded via CDN in [`core/templates/core/base.html`](core/templates/core/base.html), so no local CSS build step is required for development.
-
-6. Run the development server
-```bash
-python manage.py runserver
-```
-
-7. Optional — prepare for production
-- Collect static into `STATIC_ROOT` and serve with your webserver:
-```bash
-python manage.py collectstatic
-```
-- Ensure `DEBUG=False`, configure `ALLOWED_HOSTS`, and serve media/static files from your webserver (Nginx/Apache) or a CDN.
