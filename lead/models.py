@@ -119,3 +119,35 @@ class Lead(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Comment(models.Model):
+    """
+    Database model for lead's comment:
+
+        - team: ForeignKey (Team model)
+        - lead: ForeignKey(Lead model)
+        - content: TextField
+        - created_by: ForeignKey (User model)
+        - created_at: DateTimeField with auto_now_add
+    """
+
+    team = models.ForeignKey(
+        Team,
+        related_name="lead_comments",
+        on_delete=models.CASCADE,
+    )
+    lead = models.ForeignKey(
+        Lead,
+        related_name="coments",
+        on_delete=models.CASCADE,
+    )
+    content = models.TextField()
+    created_by = models.ForeignKey(
+        User,
+        related_name="lead_comments",
+        on_delete=models.CASCADE,
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
