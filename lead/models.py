@@ -139,7 +139,7 @@ class Comment(models.Model):
     )
     lead = models.ForeignKey(
         Lead,
-        related_name="coments",
+        related_name="comments",
         on_delete=models.CASCADE,
     )
     content = models.TextField()
