@@ -29,8 +29,12 @@
         convert leads into clients, and manage teammates if you need collaboration.
       </p>
       <div class="mt-6 flex gap-3">
-        <a href="{% url 'userprofile:signup' %}" class="inline-block py-2 px-4 bg-teal-600 text-white rounded-lg">Sign up</a>
-        <a href="{% url 'userprofile:login' %}" class="inline-block py-2 px-4 bg-white border border-gray-200 text-gray-800 rounded-lg">Log in</a>
+        {% if request.user.is_authenticated %}
+          <a href="{% url 'userprofile:myaccount' %}" class="inline-block py-2 px-4 bg-teal-600 text-white rounded-lg">My account</a>
+        {% else %}
+          <a href="{% url 'userprofile:signup' %}" class="inline-block py-2 px-4 bg-teal-600 text-white rounded-lg">Sign up</a>
+          <a href="{% url 'userprofile:login' %}" class="inline-block py-2 px-4 bg-white border border-gray-200 text-gray-800 rounded-lg">Log in</a>
+        {% endif %}
       </div>
     </div>
   </section>
@@ -41,7 +45,7 @@
       <div class="mt-4 space-y-3 text-gray-700">
         <p>
           The app follows a simple Django layout: apps for leads, clients, teams, dashboard and user profiles.
-          Views use function-based views and templates are styled with Tailwind (CDN). Environment configuration
+          Views use function-based views and templates are styled with Tailwind. Environment configuration
           is handled via python-decouple.
         </p>
         <p>
@@ -58,7 +62,7 @@
   <section class="grid gap-6 md:grid-cols-3 mb-8">
     <div class="bg-white border border-gray-200 rounded-xl p-4">
       <h3 class="font-medium text-gray-900">Tech stack</h3>
-      <p class="mt-2 text-sm text-gray-600">Python • Django • PostgreSQL • Tailwind (CDN)</p>
+      <p class="mt-2 text-sm text-gray-600">Python • Django • PostgreSQL • Tailwind</p>
     </div>
     <div class="bg-white border border-gray-200 rounded-xl p-4">
       <h3 class="font-medium text-gray-900">Getting started</h3>
