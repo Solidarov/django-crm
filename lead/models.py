@@ -3,6 +3,7 @@ from django.db.models import Q
 from django.contrib.auth.models import User
 
 from team.models import Team
+from client.models import Client
 
 
 class LeadQuerySet(models.QuerySet):
@@ -126,6 +127,7 @@ class Comment(models.Model):
     Database model for lead's comment:
 
         - team: ForeignKey (Team model)
+        - client: ForeignKey (Client model)
         - lead: ForeignKey(Lead model)
         - content: TextField
         - created_by: ForeignKey (User model)
@@ -137,10 +139,19 @@ class Comment(models.Model):
         related_name="lead_comments",
         on_delete=models.CASCADE,
     )
+    client = models.ForeignKey(
+        Client,
+        related_name="comments",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
     lead = models.ForeignKey(
         Lead,
         related_name="comments",
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     content = models.TextField()
     created_by = models.ForeignKey(
