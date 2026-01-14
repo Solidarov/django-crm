@@ -255,6 +255,11 @@ class ConvertToClientView(
                 description=lead.description,
                 created_by=request.user,
             )
+
+            # update the previous records to preserve whole comment history
+            lead_comments = Comment.objects.filter(lead=lead)
+            lead_comments.update(client=client)
+
             lead.converted_to_client = True
             lead.save()
 
