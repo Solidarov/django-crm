@@ -164,4 +164,15 @@ class Comment(models.Model):
     )
 
     def __str__(self):
-        return f"Comment for {self.lead} lead"
+        if self.client:
+            target = f"Client {self.client.name}"
+        elif self.lead:
+            target = f"Lead {self.lead.name}"
+        else:
+            target = "Unknown"
+
+        content_snippet = (
+            self.content[:30] + "..." if len(self.content) > 30 else self.content
+        )
+
+        return f"{self.created_by.username} on {target}: '{content_snippet}'"
