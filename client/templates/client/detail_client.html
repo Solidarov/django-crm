@@ -14,7 +14,7 @@
                     <div class="pr-1">
                         <strong>Description:</strong> 
                     </div>
-                    <div class="w-1/2 p-4 bg-gray-100 rounded-xl border border-gray-200  ">
+                    <div class="w-fit p-4 bg-gray-100 rounded-xl border border-gray-200  ">
                         {{ client.description }}
                     </div>  
                 </div>
@@ -64,10 +64,12 @@
                     {{ client.created_by.username }}
                 </div>  
             </div>
-            <div class="block inline-block mb-3 mt-6 space-x-3">
-                <a href="{% url 'client:edit' client.id %}" class="px-4 py-3 bg-teal-500 rounded-xl text-white hover:bg-teal-300">Edit</a>
-                <a href="{% url 'client:delete' client.id %}" class="px-4 py-3 bg-red-500 rounded-xl text-white hover:bg-red-300">Delete</a>
-            </div>
+            {% if client.created_by == request.user %}
+                <div class="block inline-block mb-3 mt-6 space-x-3">
+                    <a href="{% url 'client:edit' client.id %}" class="px-4 py-3 bg-teal-500 rounded-xl text-white hover:bg-teal-300">Edit</a>
+                    <a href="{% url 'client:delete' client.id %}" class="px-4 py-3 bg-red-500 rounded-xl text-white hover:bg-red-300">Delete</a>
+                </div>
+            {% endif %}
     
             <hr class="my-4 text-gray-200 border-1">
             
