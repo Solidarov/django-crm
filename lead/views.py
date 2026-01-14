@@ -1,9 +1,10 @@
 from django.shortcuts import redirect
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic.detail import SingleObjectMixin
+from django.views.generic.edit import FormMixin
 from django.views.generic import (
     ListView,
     DetailView,
@@ -14,11 +15,15 @@ from django.views.generic import (
 )
 from lead.forms import (
     LeadForm,
+    CommentForm,
 )
 from client.models import (
     Client,
 )
-from lead.models import Lead
+from lead.models import (
+    Lead,
+    Comment,
+)
 
 
 class LeadCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
@@ -79,7 +84,7 @@ class LeadsListView(LoginRequiredMixin, ListView):
         return queryset.order_by("-created_at")
 
 
-class LeadDetailView(LoginRequiredMixin, DetailView):
+class LeadDetailView(LoginRequiredMixin, FormMixin, DetailView):
     """
     Detail view for list lead details
 
@@ -90,6 +95,21 @@ class LeadDetailView(LoginRequiredMixin, DetailView):
     pk_url_kwarg = "id"
     context_object_name = "lead"
     template_name = "lead/detail_lead.html"
+    form_class = CommentForm
+
+    def get_success_url(self):
+        # returns the success url for the detailed page
+        return reverse("lead:detail", kwargs={"id": self.object.id})
+
+    def get_context_data(self, **kwargs):
+
+        # explicitly add the form to the context
+        # generic DetailView can overwrite some of the FormMixin info
+        context = super().get_context_data(**kwargs)
+        if "form" not in context:
+            context["form"] = self.get_form()
+
+        return context
 
     def get_queryset(self):
         # return all Lead records related to the user
@@ -101,6 +121,24 @@ class LeadDetailView(LoginRequiredMixin, DetailView):
             .get_for_user(self.request.user)
             .filter(converted_to_client=False)
         )
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def form_valid(self, form):
+        comment = form.save(commit=False)
+        comment.lead = self.object
+        comment.created_by = self.request.user
+        comment.team = self.object.team
+        comment.save()
+
+        return super().form_valid(form)
 
 
 class LeadDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
@@ -217,6 +255,11 @@ class ConvertToClientView(
                 description=lead.description,
                 created_by=request.user,
             )
+
+            # update the previous records to preserve whole comment history
+            lead_comments = Comment.objects.filter(lead=lead)
+            lead_comments.update(client=client)
+
             lead.converted_to_client = True
             lead.save()
 

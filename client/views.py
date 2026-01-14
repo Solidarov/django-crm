@@ -1,6 +1,7 @@
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.edit import FormMixin
 from django.views.generic import (
     ListView,
     DetailView,
@@ -14,6 +15,9 @@ from client.models import (
 )
 from client.forms import (
     ClientForm,
+)
+from lead.forms import (
+    CommentForm,
 )
 
 
@@ -36,7 +40,7 @@ class ClientListView(LoginRequiredMixin, ListView):
         )
 
 
-class ClientDetailView(LoginRequiredMixin, DetailView):
+class ClientDetailView(LoginRequiredMixin, FormMixin, DetailView):
     """
     View for list client details
     """
@@ -45,10 +49,41 @@ class ClientDetailView(LoginRequiredMixin, DetailView):
     pk_url_kwarg = "id"
     context_object_name = "client"
     template_name = "client/detail_client.html"
+    form_class = CommentForm
 
-    # get clients related to request user
+    def get_success_url(self):
+        return reverse("client:detail", kwargs={"id": self.object.id})
+
     def get_queryset(self):
+        # get clients related to request user
         return super().get_queryset().get_for_user(self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if "form" not in context:
+            context["form"] = self.get_form()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        # fetch the current Lead object to use later
+        # when we post the form, DetailView don't define it automatically
+        self.object = self.get_object()
+        form = self.get_form()
+
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def form_valid(self, form):
+
+        comment = form.save(commit=False)
+        comment.client = self.object
+        comment.team = self.object.team
+        comment.created_by = self.request.user
+        comment.save()
+
+        return super().form_valid(form)
 
 
 class ClientCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):

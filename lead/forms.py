@@ -2,6 +2,7 @@ from django import forms
 
 from lead.models import (
     Lead,
+    Comment,
 )
 
 from team.models import (
@@ -69,3 +70,10 @@ class LeadForm(forms.ModelForm):
                 )
 
         return cleaned_data
+
+
+class CommentForm(forms.ModelForm):
+
+    class Meta:
+        model = Comment
+        fields = ("content",)
